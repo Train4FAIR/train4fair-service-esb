@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+# APP  ***************************************************************************************
+  webdav:
+    image: bytemark/webdav
+    restart: always
+    ports:
+      - 9999:80
+    environment:
+      AUTH_TYPE: Digest
+      USERNAME: admin
+      PASSWORD: admin
+    volumes:
+      - /srv/dav:/var/lib/dav
+      - /srv/tmp:/var/lib/tmp
