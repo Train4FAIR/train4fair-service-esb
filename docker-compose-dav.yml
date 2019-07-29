@@ -3,7 +3,7 @@ version: '3'
 services:
 # APP  ***************************************************************************************
   webdav:
-    image: bytemark/webdav
+    image: jbjares/webdav:v1
     restart: always
     ports:
       - 9999:80
