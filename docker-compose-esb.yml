@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+# APP  ***************************************************************************************
+  microservices: 
+    image: jbjares/train-model-service:v6
+    ports:
+    - 80:80
+    command: bash -c "cd /app/train-model-service && mvn install -DskipTests && mvn spring-boot:run"
+
+    
+    

@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  # APP  ***************************************************************************************
+  node-red-train:
+    image: jbjares/node-red-train:v6
+    ports:
+      - 1880:1880
+    command: bash -c "cd /app/train-modelling-tool && npm install && grunt build && npm start"

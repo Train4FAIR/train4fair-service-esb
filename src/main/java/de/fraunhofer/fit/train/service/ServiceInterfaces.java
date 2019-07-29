@@ -88,37 +88,6 @@ public class ServiceInterfaces {
 	//===================================================================================================================
 
 	//===================================================================================================================
-	@PostMapping(value = "/train/landpage/customization/webdav/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	Train customLandPageToWebDav( @PathVariable String trainId) throws Exception {
-		Train train = facade.findTrainById(trainId);
-
-		String landpage = facade.customlandpage(train,trainId);
-		//byte[] indexByteArr = landpage.getBytes(StandardCharsets.UTF_8);
-		Artifacts artifact = new Artifacts();
-		artifact.setDescription("land page");
-		artifact.setFilename("index.html");
-		artifact.setFormat(StandardCharsets.UTF_8.toString());
-		artifact.setInternalId(trainId);
-		artifact.setName("index.html");
-		artifact.setFiledata(landpage);
-		Artifacts artifacts = facade.sendToDav(artifact, trainId);
-		
-		RelatedIdentifier relatedIdentifier = new RelatedIdentifier();
-		relatedIdentifier.setContent(artifacts.getFileUrl());
-		relatedIdentifier.setRelatedIdentifierType("URL");
-		if(train.getDatacite().getRelatedIdentifiers()!=null && train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier()!=null) {
-			train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier()
-			[train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier().length+1] = relatedIdentifier;
-		}
-		
-		return facade.findTrainById(trainId);
-		
-
-	}
-	//===================================================================================================================
-	
-	//===================================================================================================================
-	//===================================================================================================================
 	@PostMapping(value = "/train/add/artifacts/webdav/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	Train addArtifactsToWebDav( @PathVariable String trainId) throws Exception {
 		Train trainn = facade.findTrainById(trainId);
@@ -222,34 +191,6 @@ public class ServiceInterfaces {
 		return train;
 	}
 
-	// TODO: [Important] Do the documentation =======================
-//	@PostMapping(value = "train/add/artifact/train/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
-//	Artifacts addArtifact(@RequestBody String artifactStr, @PathVariable String trainId) throws Exception {
-//		Gson gson = new Gson();
-//		Artifacts artifacts = gson.fromJson(artifactStr, Artifacts.class);
-//
-//		artifacts.setResourceId(trainId);
-//		artifacts.setInternalId(trainId);
-//		if (artifacts.getInternalId() != null) {
-//			artifacts.set_id(new ObjectId(artifacts.getInternalId()));
-//		}
-//
-//		facade.saveArtifacts(facade.addArtifactsArr(artifacts.get_id().get().toHexString()));
-//
-//		Wagons[] wagonsArr = facade.findWagonsById(trainId);
-//		Resources[] resourceArr = facade.addResourcesArr(trainId);
-//
-//		Train train = facade.findTrainById(trainId);
-//		train = facade.saveTrainBasic(train);
-//
-//		for (int i = 0; i <= wagonsArr.length; i++) {
-//			wagonsArr[i].setResources(resourceArr);
-//		}
-//		facade.saveTrainBasic(train);
-//
-//		return artifacts;
-//	}
-	// ==================================================================
 	
 	// TODO: [Important] Do the documentation =======================
 	@PostMapping(value = "train/add/artifact/train/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -278,7 +219,7 @@ public class ServiceInterfaces {
 				}
 				// ===========================================
 				if(resources.getArtifacts()==null || resources.getArtifacts().length==0) {
-					resources.setArtifacts(new Artifacts[] {artifacts});
+					resources.setArtifacts(new Artifacts[] {artifacts, facade.getlandpage(trainId)});
 					trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
 					// ===========================================
 					trainn = facade.saveTrainBasic(trainn);
@@ -291,6 +232,7 @@ public class ServiceInterfaces {
 				if(resources.getArtifacts()!=null && resources.getArtifacts().length>0) {
 					artifactsList.addAll(Arrays.asList(resources.getArtifacts()));
 					artifactsList.add(artifacts);
+					artifactsList.add(facade.getlandpage(trainId));
 					resources.setArtifacts(artifactsList.toArray(new Artifacts[artifactsList.size()]));
 					trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
 					// ===========================================
