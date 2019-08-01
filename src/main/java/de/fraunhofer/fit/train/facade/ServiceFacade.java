@@ -277,7 +277,7 @@ public class ServiceFacade {
 
 		Sardine sardine = SardineFactory.begin("admin", "admin");
 		String filePath = "/srv/tmp/";
-		String webdavdir = "http://0.0.0.0:9999";
+		String webdavdir = "http://menzel.informatik.rwth-aachen.de:9999";
 		String url = webdavdir+"/"+trainId;
 		if(trainId.equals(artifacts.getInternalId())) {
 			Boolean existURL = sardine.exists(url);
