@@ -6,7 +6,8 @@ services:
     image: jbjares/train-model-service:v8
     ports:
     - 80:80
-    command: bash -c "cd /app/train-microservices-esb && mvn install -DskipTests && mvn spring-boot:run"
+    command: bash -c "cd /app/train-microservices-esb && mvn install -DskipTests && mvn spring-boot:run -Dserver.port=80"
+    #port mvn spring-boot:run -Dserver.port=80
 
 
     

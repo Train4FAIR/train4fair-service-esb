@@ -275,8 +275,8 @@ public class ServiceFacade {
 	}
 	public Artifacts sendToDav(Artifacts artifacts, String trainId) throws IOException {
 
-		Sardine sardine = SardineFactory.begin("admin", "admin");
-		String filePath = "/srv/tmp/";
+		Sardine sardine = SardineFactory.begin("", "");
+		String filePath = "/tmp/webdav";
 		String webdavdir = "http://menzel.informatik.rwth-aachen.de:9999";
 		String url = webdavdir+"/"+trainId;
 		if(trainId.equals(artifacts.getInternalId())) {
@@ -287,9 +287,10 @@ public class ServiceFacade {
 		}
 
 		
-		FileUtils.writeStringToFile(new File(filePath),artifacts.getFiledata());
-		byte[] data = FileUtils.readFileToByteArray(new File(filePath));
-		sardine.put(url+"/"+artifacts.getName().trim(), data);
+		//FileUtils.writeStringToFile(new File(filePath),artifacts.getFiledata());
+		//byte[] data = FileUtils.readFileToByteArray(new File(filePath));
+		//sardine.put(url+"/"+artifacts.getName().trim(), data);
+		sardine.copy(url+"/"+artifacts.getName().trim(), artifacts.getFiledata());
 		
 		artifacts.setFiledata(null);
 		artifacts.setFileUrl(url);

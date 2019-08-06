@@ -6,7 +6,7 @@ services:
     image: jbjares/webdav:v1
     restart: always
     ports:
-      - 9999:80
+      - 9999:9999
     environment:
       AUTH_TYPE: Digest
       USERNAME: admin
