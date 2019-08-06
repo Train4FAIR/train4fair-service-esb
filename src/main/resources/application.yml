@@ -1,5 +1,5 @@
 server:
   servlet:
     context-path: /RepositoryService
-  port: 80
-  address: 0.0.0.0
+  port: 3005
+  address: menzel.informatik.rwth-aachen.de
