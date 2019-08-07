@@ -117,8 +117,6 @@ public class ServiceInterfaces {
 					for(Artifacts artifact: resources.getArtifacts()) {
 						Artifacts artifacts = facade.sendToDav(artifact, trainId);
 						artifactsList.add(artifacts);
-						System.out.println("==== resources.getArtifacts() ===>>> "+artifact.getName());
-						System.out.println("==== resources.getArtifacts() ===>>> "+artifact.getFilename());
 					}
 					System.out.println("==========================================");
 					resources.setArtifacts(artifactsList.toArray(new Artifacts[artifactsList.size()]));
@@ -219,12 +217,15 @@ public class ServiceInterfaces {
 				}
 				// ===========================================
 				if(resources.getArtifacts()==null || resources.getArtifacts().length==0) {
-					resources.setArtifacts(new Artifacts[] {artifacts, facade.getlandpage(trainId)});
-					trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
-					// ===========================================
-					trainn = facade.saveTrainBasic(trainn);
-					// ===========================================
-					continue;
+					if(facade.getlandpage(trainId)!=null) {
+						resources.setArtifacts(new Artifacts[] {artifacts, });
+						trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
+						// ===========================================
+						trainn = facade.saveTrainBasic(trainn);
+						// ===========================================
+						continue;
+					}
+
 				}
 				
 				List<Artifacts> artifactsList = new ArrayList<Artifacts>();

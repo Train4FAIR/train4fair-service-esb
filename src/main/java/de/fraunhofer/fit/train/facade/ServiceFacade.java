@@ -1,12 +1,16 @@
 package de.fraunhofer.fit.train.facade;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -14,8 +18,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
+import javax.management.RuntimeErrorException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
@@ -79,6 +86,8 @@ import de.fraunhofer.fit.train.persistence.IWagonRepository;
 @Service
 public class ServiceFacade {
 	
+	private static final String WELCOME_HTML = "welcome.html";
+
 	private SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 	
 	@Autowired  
@@ -254,15 +263,22 @@ public class ServiceFacade {
 	public Artifacts getlandpage(String trainId) throws Exception {
 		Train train = findTrainById(trainId);
 		Artifacts artifact = null;
-		Boolean exist = artifactRepository.existsById(trainId);
-		if(!exist) {
+		
+		Iterable<Artifacts> artifactList = artifactRepository.findAll();
+		Iterator<Artifacts> it = artifactList.iterator(); while(it.hasNext()) {
+			artifact = it.next();
+			
+			if(artifact.getInternalId().equals(trainId) && artifact.getName().equals(WELCOME_HTML)) {
+				continue;
+			}
+			
 			artifact = new Artifacts();
 			String landpage = customlandpage(train,trainId);
 			artifact.setDescription("landpage");
-			artifact.setFilename("welcome.html");
+			artifact.setFilename(WELCOME_HTML);
 			artifact.setFormat(StandardCharsets.UTF_8.toString());
 			artifact.setInternalId(trainId);
-			artifact.setName("welcome.html");
+			artifact.setName(WELCOME_HTML);
 			artifact.setFiledata(landpage);
 			//Artifacts artifacts = facade.sendToDav(artifact, trainId);
 			
@@ -273,36 +289,50 @@ public class ServiceFacade {
 //				train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier()
 //				[train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier().length+1] = relatedIdentifier;
 //			}
-			
 		}
+
+
+			
+		
 
 
 		return artifact;
 
 	}
+	@SuppressWarnings({ "finally", "deprecation" })
 	public Artifacts sendToDav(Artifacts artifacts, String trainId) throws IOException {
 
-		Sardine sardine = SardineFactory.begin("admin", "admin");
-		String filePath = "/tmp/webdav";
-		String webdavdir = "http://menzel.informatik.rwth-aachen.de:9999";
-		String url = webdavdir+"/"+trainId;
-		if(trainId.equals(artifacts.getInternalId())) {
-			Boolean existURL = sardine.exists(url);
-			if(!existURL) {
-				sardine.createDirectory(url);
+		Sardine sardine = SardineFactory.begin("admin", "admin");		
+		try {
+			String filePath = "/tmp/webdav/";
+			String webdavdir = "http://menzel.informatik.rwth-aachen.de:9999";
+			String url = webdavdir+"/"+trainId;
+			if(trainId.equals(artifacts.getInternalId())) {
+				Boolean existURL = sardine.exists(url);
+				if(!existURL) {
+					sardine.createDirectory(url);
+				}
 			}
+
+			FileUtils.writeStringToFile(new File(filePath),artifacts.getFiledata());
+			byte[] data = FileUtils.readFileToByteArray(new File(filePath));
+			byte[] decoded = Base64.getDecoder().decode(data);
+			InputStream stream = new ByteArrayInputStream(decoded);
+			
+			
+			sardine.put(url+"/"+artifacts.getName().trim(), stream);
+			
+			artifacts.setFiledata(null);
+			artifacts.setFileUrl(url);
+		}catch(Exception e) {
+			throw new RuntimeException(e.getMessage(),e);
+		}finally {
+			sardine.shutdown();
+			return artifacts;
 		}
 
-		
-		FileUtils.writeStringToFile(new File(filePath),artifacts.getFiledata());
-		byte[] data = FileUtils.readFileToByteArray(new File(filePath));
-		sardine.put(url+"/"+artifacts.getName().trim(), data);
-		
-		artifacts.setFiledata(null);
-		artifacts.setFileUrl(url);
 
-		sardine.shutdown();
-		return artifacts;
+
 	}
 
 
@@ -972,6 +1002,10 @@ public class ServiceFacade {
 //		System.out.println(customlandpage(train,"234567890"));
 //	}
 
-	
+	public static void main(String[] args) throws IOException {
+		Files.lines(Paths.get("/Users/jbjares/workspaces/TrainmodelHelper/train-model-service/src/main/resources/content/script.py"), StandardCharsets.UTF_8).forEach(System.out::println);
+
+
+	}
 
 }
