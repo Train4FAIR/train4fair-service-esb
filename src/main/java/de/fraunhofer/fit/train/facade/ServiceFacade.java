@@ -250,32 +250,38 @@ public class ServiceFacade {
 		//return webdavdir+"/"+artifact.getName().replace(".", "_");
 		
 	//}
+
 	public Artifacts getlandpage(String trainId) throws Exception {
 		Train train = findTrainById(trainId);
-
-		String landpage = customlandpage(train,trainId);
 		Artifacts artifact = new Artifacts();
-		artifact.setDescription("land page");
-		artifact.setFilename("welcome.html");
-		artifact.setFormat(StandardCharsets.UTF_8.toString());
-		artifact.setInternalId(trainId);
-		artifact.setName("welcome.html");
-		artifact.setFiledata(landpage);
-		//Artifacts artifacts = facade.sendToDav(artifact, trainId);
-		
-//		RelatedIdentifier relatedIdentifier = new RelatedIdentifier();
-//		relatedIdentifier.setContent(artifacts.getFileUrl());
-//		relatedIdentifier.setRelatedIdentifierType("URL");
-//		if(train.getDatacite().getRelatedIdentifiers()!=null && train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier()!=null) {
-//			train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier()
-//			[train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier().length+1] = relatedIdentifier;
-//		}
-		
+		Boolean exist = artifactRepository.existsById(trainId);
+		if(!exist) {
+			String landpage = customlandpage(train,trainId);
+			artifact.setDescription("landpage");
+			artifact.setFilename("welcome.html");
+			artifact.setFormat(StandardCharsets.UTF_8.toString());
+			artifact.setInternalId(trainId);
+			artifact.setName("welcome.html");
+			artifact.setFiledata(landpage);
+			//Artifacts artifacts = facade.sendToDav(artifact, trainId);
+			
+//			RelatedIdentifier relatedIdentifier = new RelatedIdentifier();
+//			relatedIdentifier.setContent(artifacts.getFileUrl());
+//			relatedIdentifier.setRelatedIdentifierType("URL");
+//			if(train.getDatacite().getRelatedIdentifiers()!=null && train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier()!=null) {
+//				train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier()
+//				[train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier().length+1] = relatedIdentifier;
+//			}
+			
+		}
+
+
 		return artifact;
+
 	}
 	public Artifacts sendToDav(Artifacts artifacts, String trainId) throws IOException {
 
-		Sardine sardine = SardineFactory.begin("", "");
+		Sardine sardine = SardineFactory.begin("admin", "admin");
 		String filePath = "/tmp/webdav";
 		String webdavdir = "http://menzel.informatik.rwth-aachen.de:9999";
 		String url = webdavdir+"/"+trainId;
@@ -287,10 +293,9 @@ public class ServiceFacade {
 		}
 
 		
-		//FileUtils.writeStringToFile(new File(filePath),artifacts.getFiledata());
-		//byte[] data = FileUtils.readFileToByteArray(new File(filePath));
-		//sardine.put(url+"/"+artifacts.getName().trim(), data);
-		sardine.copy(url+"/"+artifacts.getName().trim(), artifacts.getFiledata());
+		FileUtils.writeStringToFile(new File(filePath),artifacts.getFiledata());
+		byte[] data = FileUtils.readFileToByteArray(new File(filePath));
+		sardine.put(url+"/"+artifacts.getName().trim(), data);
 		
 		artifacts.setFiledata(null);
 		artifacts.setFileUrl(url);
