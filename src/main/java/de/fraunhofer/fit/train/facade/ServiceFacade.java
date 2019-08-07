@@ -253,9 +253,10 @@ public class ServiceFacade {
 
 	public Artifacts getlandpage(String trainId) throws Exception {
 		Train train = findTrainById(trainId);
-		Artifacts artifact = new Artifacts();
+		Artifacts artifact = null;
 		Boolean exist = artifactRepository.existsById(trainId);
 		if(!exist) {
+			artifact = new Artifacts();
 			String landpage = customlandpage(train,trainId);
 			artifact.setDescription("landpage");
 			artifact.setFilename("welcome.html");
