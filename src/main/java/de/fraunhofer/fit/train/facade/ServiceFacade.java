@@ -302,10 +302,13 @@ public class ServiceFacade {
 	@SuppressWarnings({ "finally", "deprecation" })
 	public Artifacts sendToDav(Artifacts artifacts, String trainId) throws IOException {
 
-		Sardine sardine = SardineFactory.begin("admin", "admin");		
+		Sardine sardine = SardineFactory.begin("test", "test");		
 		try {
 			String filePath = "/tmp/webdav/";
-			String webdavdir = "http://menzel.informatik.rwth-aachen.de:9999";
+			if(!new File(filePath).exists()){
+				new File(filePath).createNewFile();
+			}
+			String webdavdir = "http://menzel.informatik.rwth-aachen.de:8888";
 			String url = webdavdir+"/"+trainId;
 			if(trainId.equals(artifacts.getInternalId())) {
 				Boolean existURL = sardine.exists(url);
