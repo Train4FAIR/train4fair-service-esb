@@ -10,4 +10,5 @@ services:
     #port mvn spring-boot:run -Dserver.port=80
 
 
-    
+    #cd /app/train-microservices-esb && mvn install -DskipTests && mvn spring-boot:run -Dserver.port=80
+    #cd /app/train-microservices-esb && mvn spring-boot:run -Dserver.address=0.0.0.0 -Dserver.port=9091

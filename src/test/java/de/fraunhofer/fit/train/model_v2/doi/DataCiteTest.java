@@ -2,7 +2,9 @@ package de.fraunhofer.fit.train.model_v2.doi;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Base64;
 
@@ -12,6 +14,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -33,10 +36,24 @@ public class DataCiteTest {
 
 	private static final String TEMPLATE_LOCATION = "/Users/jbjares/workspaces/TrainmodelHelper/TrainModel/src/main/resources/content/my_draft_doi.json";
 	
-	private static final String TEMPLATE_FROM_DRAFT_TO_REGISTERED = "/Users/jbjares/workspaces/TrainmodelHelper/TrainModel/src/main/resources/content/change_draft_to_rester_doi.json";
+	private static final String TEMPLATE_LOCATION_XML = "/Users/jbjares/workspaces/TrainmodelHelper/TrainModel/src/main/resources/content/my_draft_doiXML.xml";
+	
+	private static final String TEMPLATE_FROM_DRAFT_TO_REGISTERED = "/Users/jbjares/workspaces/TrainmodelHelper/train-model-service/src/main/resources/content/change_draft_to_rester_doi.json";
+	
+	private static final String COMMAND_LINE = "curl -X POST -H \"Content-Type: application/vnd.api+json\" --user DEV.FIT:Nahan@123 -d @my_draft_doi.json https://api.test.datacite.org/dois -iv";
+	
+	private static final String COMMAND_LINE2 = "curl -X POST -H \"Content-Type: application/vnd.api+json\" --user DEV.FIT:Nahan@123 -d @resources/content/my_draft_doi.json https://api.test.datacite.org/dois -iv";
 
+	
 	@Test
 	public void getDraftDOI() throws Exception {
+		String command = "COMMAND_LINE2";
+		Process process = Runtime.getRuntime().exec(command);
+		process.getInputStream();
+	}
+	
+	//@Test
+	public void getDOI() throws Exception {
 		//https://api.datacite.org/dois
 		   String hostname = "https://api.test.datacite.org/dois";
 		    String password = "Nahan@123";
@@ -66,10 +83,43 @@ public class DataCiteTest {
                     //.addBinaryBody("@my_draft_doi.json", FileUtils.readFileToByteArray(new File(TEMPLATE_LOCATION)), ContentType.create(APPLICATION_VND_API_JSON), "my_draft_doi.json")
                     .build();
             
+	}
+	//@Test
+	public void getDraftDOI2() throws Exception {
+		//https://api.datacite.org/dois
+		   String hostname = "https://api.test.datacite.org/dois";
+		    String password = "Nahan@123";
+		    String username = "DEV.FIT";
+		   
+		    UsernamePasswordCredentials creds = new UsernamePasswordCredentials(hostname, password);
+		    System.out.println("User: "+creds.getUserPrincipal().getName());
+		    System.out.println("Password: "+creds.getPassword());
+		   
+		    String authString = hostname + ":" + "123";
+		    System.out.println("auth string: " + authString);
+		    byte[] authEncBytes = Base64.getEncoder().encode(authString.getBytes());
+		    String authStringEnc = new String(authEncBytes);
+		    System.out.println("Base64 encoded auth string: " + authStringEnc);
+		   
+		    URI uri = new URIBuilder()
+		            .setScheme("https")
+		            .setHost("api.test.datacite.org")
+		            .setPath("/dois")
+		            //.setParameter("username", username).build();
+		            .build();
+
+		    
+            HttpEntity entity = MultipartEntityBuilder.create()
+                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                    .setCharset(Charset.forName(UTF_8))
+                    .addBinaryBody("my_draft_doiXML.XML", new File(TEMPLATE_LOCATION_XML))
+                    .addBinaryBody("@my_draft_doiXML.xml", FileUtils.readFileToByteArray(new File(TEMPLATE_LOCATION_XML)), ContentType.create(APPLICATION_VND_API_JSON), "my_draft_doi.json")
+                    .build();
+            
 		    HttpPost post = new HttpPost(uri);
 		    post.addHeader("Content-Type", "application/vnd.api+json");
 		    post.addHeader("--user","DEV.FIT:Nahan@123");
-		    post.addHeader("-d","@my_draft_doi.json");
+		    post.addHeader("-d","@my_draft_doiXML.xml");
 		    post.setEntity(entity);
 		    System.out.println(post.getURI());
 		    HttpResponse response = new BasicHttpResponse(HttpVersion.HTTP_1_1,
@@ -100,7 +150,7 @@ public class DataCiteTest {
 		    String password = "Nahan@123";
 		    String username = "DEV.FIT";
 		   
-		    UsernamePasswordCredentials creds = new UsernamePasswordCredentials(hostname, password);
+		    UsernamePasswordCredentials creds = new UsernamePasswordCredentials("DEV.FIT", "Nahan@123");
 		    System.out.println("User: "+creds.getUserPrincipal().getName());
 		    System.out.println("Password: "+creds.getPassword());
 		   
@@ -113,11 +163,11 @@ public class DataCiteTest {
 		    URI uri = new URIBuilder()
 		            .setScheme("https")
 		            .setHost("api.test.datacite.org")
-		            .setPath("/dois/10.20408/0001")
+		            .setPath("/dois/10.20408/3gsp-ye99")
 		            .setParameter("username", username).build();
 		    //CloseableHttpClient httpclient = HttpClients.createDefault();
 		    HttpGet httpGet = new HttpGet(uri);
-		    System.out.println(httpGet.getURI());
+		    System.out.println("========>>>  "+httpGet.getURI());
 		    HttpResponse response = new BasicHttpResponse(HttpVersion.HTTP_1_1,
 		            HttpStatus.SC_OK, OK);
 
@@ -131,17 +181,63 @@ public class DataCiteTest {
 		            HttpEntity entity = MultipartEntityBuilder.create()
 		                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
 		                    .setCharset(Charset.forName(UTF_8))
-		                    .addBinaryBody("@my_draft_doi.json", FileUtils.readFileToByteArray(new File(TEMPLATE_FROM_DRAFT_TO_REGISTERED)), ContentType.create(APPLICATION_VND_API_JSON), "change_draft_to_rester_doi.json")
+		                    .addBinaryBody("@change_draft_to_rester_doi.json", FileUtils.readFileToByteArray(new File(TEMPLATE_FROM_DRAFT_TO_REGISTERED)), ContentType.create(APPLICATION_VND_API_JSON), "change_draft_to_rester_doi.json")
 		                    .build();
 		   
-		            System.out.println(
-		            Request.Get(uri)
+		            System.out.println("uri ========>>>  "+uri);
+		            //System.out.println(
+		            Request.Post(uri)
 		            .connectTimeout(1000)
 		            .socketTimeout(1000)
 		            .body(entity)
-		            .execute().returnContent().asString()); 
+		            .execute().toString();//); 
 	}
 	
+	//@Test
+	public void autogeneratedoi() throws URISyntaxException, ClientProtocolException, IOException {
+		
+		   String hostname = "https://api.test.datacite.org/dois";
+		    String username = "DEV.FIT";
+		    String password = "Nahan@123";
+		   
+		    UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username,password);
+		    System.out.println("User: "+creds.getUserPrincipal().getName());
+		    System.out.println("Password: "+creds.getPassword());
+		    
+		    
+		    URI uri = new URIBuilder()
+		            .setScheme(hostname)
+		            .setHost("api.test.datacite.org")
+		            .setPath("/dois/10.20408/")
+		            .setParameter("username", username)
+		            .setParameter("password", password)
+		            .build();
+		    
+		    //CloseableHttpClient httpclient = HttpClients.createDefault();
+		    HttpGet post = new HttpGet(uri);
+		    HttpResponse response = new BasicHttpResponse(HttpVersion.HTTP_1_1,
+		            HttpStatus.SC_OK, OK);
+		    
+//            HttpEntity entity = MultipartEntityBuilder.create()
+//                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+//                    .setCharset(Charset.forName(UTF_8))
+//                    .addBinaryBody("@change_draft_to_rester_doi.json", new File(TEMPLATE_FROM_DRAFT_TO_REGISTERED))
+//                    .build();
+//
+            response =  Request.Post(uri)
+		    	    .connectTimeout(10000)
+		    	    .socketTimeout(10000)
+		    	    //.body(entity)
+		    	    .execute()
+		    	    .returnResponse();
+//
+//		    	int status = response.getStatusLine().getStatusCode();
+//		    	byte[] serializedObject = EntityUtils.toByteArray(response.getEntity());
+//		    	System.out.println("============>>   ");
+//		    	System.out.println(TrainUtil.ByteArrayToString(serializedObject));
+//		    	System.out.println(status);
+//		
+	}
 
 
 }

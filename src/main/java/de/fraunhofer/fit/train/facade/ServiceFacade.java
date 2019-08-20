@@ -270,6 +270,8 @@ public class ServiceFacade {
 			
 			if(artifact.getInternalId().equals(trainId) && artifact.getName().equals(WELCOME_HTML)) {
 				continue;
+			}else {
+				
 			}
 			
 			artifact = new Artifacts();
@@ -280,7 +282,7 @@ public class ServiceFacade {
 			artifact.setInternalId(trainId);
 			artifact.setName(WELCOME_HTML);
 			artifact.setFiledata(landpage);
-			//Artifacts artifacts = facade.sendToDav(artifact, trainId);
+			Artifacts artifacts = sendToDav(artifact, trainId);
 			
 //			RelatedIdentifier relatedIdentifier = new RelatedIdentifier();
 //			relatedIdentifier.setContent(artifacts.getFileUrl());

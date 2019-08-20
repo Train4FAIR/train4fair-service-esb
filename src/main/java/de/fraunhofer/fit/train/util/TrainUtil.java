@@ -16,6 +16,12 @@ import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.io.FileUtils;
 
 public class TrainUtil {
+	
+	public  static String  ByteArrayToString(byte[] arr) {
+		String str = new String(arr);
+		return str;
+
+	}
 
 	public static String getChecksum(Serializable object) throws IOException, NoSuchAlgorithmException {
 		ByteArrayOutputStream baos = null;
