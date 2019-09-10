@@ -56,7 +56,7 @@ public class Application extends SpringBootServletInitializer {
         			builder.addHttpListener(Integer.parseInt(env.getString("port")), env.getString("host"));
         			//return new MongoClient(env.getString("host"), Integer.parseInt(env.getString("port")));
         		} catch (IOException e) {
-        			throw new RuntimeException("Error reading the db properties through service locator on AppConfig class");
+        			throw new RuntimeException("Error reading the db properties through service locator on AppConfig class",e);
         		}
                 
             }
