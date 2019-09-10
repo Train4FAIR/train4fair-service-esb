@@ -107,9 +107,73 @@ public class Train implements  Serializable {
 	private Datacite datacite;
 	
 
+	/**
+	 * UC03 - Init
+	 */
+
+	@SerializedName("isAccessConstraintsOk")
+	@Expose
+	private Boolean isAccessConstraintsOk;
+	
+	@SerializedName("hasGeneralRegistryPolicy")
+	@Expose
+	private Boolean hasGeneralRegistryPolicy;
+	
+	@SerializedName("hasEnoughPatientOcurrences")
+	@Expose
+	private Boolean hasEnoughPatientOcurrences;
+	
+	@SerializedName("aggregationResult")
+	@Expose
+	private String aggregationResult;
 	
 
 	
+	public Boolean getIsAccessConstraintsOk() {
+		return isAccessConstraintsOk;
+	}
+
+
+	public void setIsAccessConstraintsOk(Boolean isAccessConstraintsOk) {
+		this.isAccessConstraintsOk = isAccessConstraintsOk;
+	}
+
+
+	public Boolean getHasGeneralRegistryPolicy() {
+		return hasGeneralRegistryPolicy;
+	}
+
+
+	public void setHasGeneralRegistryPolicy(Boolean hasGeneralRegistryPolicy) {
+		this.hasGeneralRegistryPolicy = hasGeneralRegistryPolicy;
+	}
+
+
+	public Boolean getHasEnoughPatientOcurrences() {
+		return hasEnoughPatientOcurrences;
+	}
+
+
+	public void setHasEnoughPatientOcurrences(Boolean hasEnoughPatientOcurrences) {
+		this.hasEnoughPatientOcurrences = hasEnoughPatientOcurrences;
+	}
+
+
+	public String getAggregationResult() {
+		return aggregationResult;
+	}
+
+
+	public void setAggregationResult(String aggregationResult) {
+		this.aggregationResult = aggregationResult;
+	}
+
+
+	/**
+	 * UC03 - End
+	 */
+
+
 	public ObjectId get_id() {
 		return _id;
 	}

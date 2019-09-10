@@ -217,14 +217,14 @@ public class ServiceInterfaces {
 				}
 				// ===========================================
 				if(resources.getArtifacts()==null || resources.getArtifacts().length==0) {
-					if(facade.getlandpage(trainId)!=null) {
+					//if(facade.getlandpage(trainId)!=null) {
 						resources.setArtifacts(new Artifacts[] {artifacts, });
 						trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
 						// ===========================================
 						trainn = facade.saveTrainBasic(trainn);
 						// ===========================================
-						continue;
-					}
+						//continue;
+					//}
 
 				}
 				
