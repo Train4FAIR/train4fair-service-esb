@@ -1,0 +1,243 @@
+{
+    "name" : "BMI Train",
+    "internalId" : "5d403831c8484b96ba6d1533",
+    "internalVersion" : "5d403831c8484b96ba6d15345d403831c8484b96ba6d1535_30.07.2019",
+    "internalPointer" : "5d403831c8484b96ba6d1536",
+    "wagons" : [ 
+        {
+            "name" : "Wagon BMI",
+            "resources" : [ 
+                {
+                    "name" : "Resource BMI",
+                    "artifacts" : [ 
+                        {
+                            "name" : "build.sh",
+                            "filename" : "",
+                            "format" : "utf8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "internalId" : "5d403831c8484b96ba6d1533",
+                            "resourceId" : "5d403831c8484b96ba6d1533"
+                        }, 
+                        {
+                            "name" : "welcome.html",
+                            "filename" : "welcome.html",
+                            "format" : "UTF-8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "description" : "land page",
+                            "internalId" : "5d403831c8484b96ba6d1533"
+                        }, 
+                        {
+                            "name" : "Dockerfile",
+                            "filename" : "",
+                            "format" : "utf8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "internalId" : "5d403831c8484b96ba6d1533",
+                            "resourceId" : "5d403831c8484b96ba6d1533"
+                        }, 
+                        {
+                            "name" : "welcome.html",
+                            "filename" : "welcome.html",
+                            "format" : "UTF-8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "description" : "land page",
+                            "internalId" : "5d403831c8484b96ba6d1533"
+                        }, 
+                        {
+                            "name" : "input2.cql",
+                            "filename" : "",
+                            "format" : "utf8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "internalId" : "5d403831c8484b96ba6d1533",
+                            "resourceId" : "5d403831c8484b96ba6d1533"
+                        }, 
+                        {
+                            "name" : "welcome.html",
+                            "filename" : "welcome.html",
+                            "format" : "UTF-8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "description" : "land page",
+                            "internalId" : "5d403831c8484b96ba6d1533"
+                        }, 
+                        {
+                            "name" : "requirements.txt",
+                            "filename" : "",
+                            "format" : "utf8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "internalId" : "5d403831c8484b96ba6d1533",
+                            "resourceId" : "5d403831c8484b96ba6d1533"
+                        }, 
+                        {
+                            "name" : "welcome.html",
+                            "filename" : "welcome.html",
+                            "format" : "UTF-8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "description" : "land page",
+                            "internalId" : "5d403831c8484b96ba6d1533"
+                        }, 
+                        {
+                            "name" : "script.py",
+                            "filename" : "",
+                            "format" : "utf8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "internalId" : "5d403831c8484b96ba6d1533",
+                            "resourceId" : "5d403831c8484b96ba6d1533"
+                        }, 
+                        {
+                            "name" : "welcome.html",
+                            "filename" : "welcome.html",
+                            "format" : "UTF-8",
+                            "fileUrl" : "http://0.0.0.0:9999/5d403831c8484b96ba6d1533",
+                            "description" : "land page",
+                            "internalId" : "5d403831c8484b96ba6d1533"
+                        }
+                    ],
+                    "oci" : {
+                        "created" : "28/06/2019",
+                        "author" : "jbjares@gmail.com",
+                        "architecture" : "AMD64",
+                        "os" : "LINUX",
+                        "config" : {
+                            "user" : "jbjares",
+                            "exposedPort" : [ 
+                                {
+                                    "port" : "80:1880",
+                                    "protocol" : "http"
+                                }
+                            ],
+                            "env" : [ 
+                                "/root"
+                            ],
+                            "entrypoint" : [ 
+                                "/bin/bash/"
+                            ],
+                            "cmd" : [ 
+                                "bash -c \"cd /app/train-model-service && mvn install -DskipTests && mvn spring-boot:run\""
+                            ],
+                            "volumes" : [ 
+                                "./data/db:/data/db"
+                            ]
+                        }
+                    },
+                    "description" : "Resource BMI to hold the Artifact Model",
+                    "internalId" : "5d403831c8484b96ba6d1533",
+                    "wagonId" : "5d403831c8484b96ba6d1533"
+                }
+            ],
+            "description" : "Wagon for BMI Calculation",
+            "internalId" : "5d403831c8484b96ba6d1533",
+            "trainId" : "5d403831c8484b96ba6d1533"
+        }
+    ],
+    "sourceRepository" : "Fraunhofer",
+    "userToken" : "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtZXNzYWdlIjoiSldUIFJ1bGVzISIsImlhdCI6MTQ1OTQ0ODExOSwiZXhwIjoxNDU5NDU0NTE5fQ.-yIVBD5b73C75osbmwwshQNRC7frWUYrqaTjTpza2y4",
+    "description" : "Train for BMI Calculation",
+    "datacite" : {
+        "identifier" : {
+            "identifierType" : "DOI",
+            "content" : "10.5072/example-full"
+        },
+        "formats" : {
+            "format" : [ 
+                {
+                    "content" : "application/json"
+                }
+            ]
+        },
+        "rightsList" : {
+            "rights" : [ 
+                {
+                    "rightsURI" : "http://creativecommons.org/publicdomain/zero/1.0/",
+                    "content" : "CC0 1.0 Universal"
+                }
+            ]
+        },
+        "creators" : {
+            "creator" : [ 
+                {
+                    "affiliation" : "Fraunhofer FIT",
+                    "givenName" : "Joao Bosco Jares",
+                    "familyName" : "Alves Chaves",
+                    "creatorName" : {
+                        "nameType" : "",
+                        "content" : "Joao Bosco Jares MSc."
+                    },
+                    "nameIdentifier" : {
+                        "nameIdentifierScheme" : "ORCID",
+                        "schemeURI" : "http://orcid.org/",
+                        "content" : "https://orcid.org/0000-0001-6066-2602"
+                    }
+                }
+            ]
+        },
+        "subjects" : {
+            "subject" : [ 
+                {
+                    "schemeURI" : "http://dewey.info/",
+                    "content" : "BMI Train for Computer Science",
+                    "subjectScheme" : "dewey"
+                }
+            ]
+        },
+        "dates" : {
+            "date" : [ 
+                {
+                    "dateType" : "VALID",
+                    "dateInformation" : "200",
+                    "content" : "28/06/2019"
+                }
+            ]
+        },
+        "language" : "EN_ENGLISH",
+        "titles" : {
+            "title" : [ 
+                {
+                    "content" : "BMI  Train ",
+                    "titleType" : "ALTERNATIVETITLE"
+                }
+            ]
+        },
+        "version" : "1.0.0",
+        "descriptions" : {
+            "description" : [ 
+                {
+                    "descriptionType" : "TECHNICALINFO",
+                    "content" : "Calculates the BMI of the Patients in a specific data center"
+                }
+            ]
+        },
+        "publisher" : "DataCite",
+        "publicationYear" : "2019",
+        "contributors" : {
+            "contributor" : [ 
+                {
+                    "affiliation" : "Frauhofer Fit",
+                    "givenName" : "Yeliz",
+                    "familyName" : "Ucer",
+                    "contributorType" : "PROJECTMANAGER",
+                    "contributorName" : "Yeliz Ucer",
+                    "nameIdentifier" : {
+                        "nameIdentifierScheme" : "ORCID"
+                    }
+                }
+            ]
+        },
+        "fundingReferences" : {
+            "fundingReference" : [ 
+                {
+                    "funderName" : "Smith Care",
+                    "funderIdentifier" : {
+                        "funderIdentifierType" : "OTHER",
+                        "content" : ""
+                    },
+                    "awardNumber" : "000-6687687-678678",
+                    "awardTitle" : "Fair Metadata"
+                }
+            ]
+        },
+        "resourceType" : {
+            "resourceTypeGeneral" : "TRAIN",
+            "content" : "Software"
+        }
+    },
+    "_class" : "de.fraunhofer.fit.train.model_v1.Train"
+}
