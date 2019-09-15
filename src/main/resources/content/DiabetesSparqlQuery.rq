@@ -1,0 +1,5 @@
+SELECT ?diabetes
+WHERE
+{
+  <http://example.org/diabetes/diabetes> <http://purl.org/dc/elements/1.1/title> ? diabetes .
+}

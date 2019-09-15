@@ -1,0 +1,1 @@
+{"name":"Diabetes Test Resource","description":"Diabetes Test Query","oci":{"created":"","author":"","architecture":"","os":"","config":{"user":"","exposedPorts":[{"port":"","protocol":""}],"cmd":[""],"volumes":[""],"env":[""],"entrypoint":["2c43508e-4ac4-4562-a13f-5e1549818761"]}}}

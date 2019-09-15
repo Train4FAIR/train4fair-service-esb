@@ -3,44 +3,25 @@ version: '3'
 services:
 # APP  ***************************************************************************************
   microservices: 
-    image: jbjares/node-service-discovery:v10
+    image: jbjares/train-model-service:v10
     ports:
     - 9091:9091
     links:
-    - mongo
+    - mongo_ms
     depends_on:
-    - mongo
+    - mongo_ms
     command: bash -c "cd /app/train-microservices-esb && mvn install -DskipTests && mvn spring-boot:run -Dserver.address=0.0.0.0 -Dserver.port=9091"
 
 
-
-# DB  ***************************************************************************************
-  mongo:
+# DB-SD  ***************************************************************************************
+  mongo_ms:
+    #image: jbjares/mongo_sd:v1
     image: jbjares/mongo_java8_maven:v1
     environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/db.log
+      - MONGO_DATA_DIR=/data/db_ms
+      - MONGO_LOG_DIR=/dev/db_ms.log
     volumes:
-      - ./data/db:/data/db
+      - ./data/db_ms:/data/db_ms
     ports:
-        - 27017:27017
-    command: mongod --bind_ip_all --ipv6 --port 27017
-    
-    
-
-    
-    
-    
-    
-    
-#version: '3'
-#services:
-# APP  ***************************************************************************************
-#microservices: 
-#    image: jbjares/train-model-service:v8
-#    ports:
-#    - 80:80
-#    command: bash -c "cd /app/train-microservices-esb && mvn install -DskipTests && mvn spring-boot:run -Dserver.port=80"
-#port mvn spring-boot:run -Dserver.port=80
-#cd /app/train-microservices-esb && mvn install -DskipTests && mvn spring-boot:run -Dserver.port=80
-#cd /app/train-microservices-esb && mvn spring-boot:run -Dserver.address=0.0.0.0 -Dserver.port=9091
+        - 27019:27019
+    command: mongod --bind_ip_all --ipv6 --port 27019 --config /etc/mongod_ms.conf

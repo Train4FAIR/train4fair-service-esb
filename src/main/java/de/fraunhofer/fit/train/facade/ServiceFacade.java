@@ -202,6 +202,19 @@ public class ServiceFacade {
 		return enumValues;
 	}
 
+	public void deleteTrainById(String id) throws IOException, NoSuchAlgorithmException {
+		trainRepository.deleteById(id);
+	}
+	
+	
+	public void deleteAllWagons() throws IOException, NoSuchAlgorithmException {
+		wagonRepository.deleteAll();
+	}
+	
+	public void deleteAllResources() throws IOException, NoSuchAlgorithmException {
+		resourceRepository.deleteAll();
+	}
+	
 	public Train saveUpdateTrain(Train train) throws IOException, NoSuchAlgorithmException {
 		return trainRepository.save(train);
 	}
@@ -209,6 +222,8 @@ public class ServiceFacade {
 	public Resources saveUpdateResource(Resources resources) throws IOException, NoSuchAlgorithmException {
 		return resourceRepository.save(resources);
 	}
+	
+	
 
 	public Train addFilesToWebDav(Train train) throws Exception {
 
@@ -349,7 +364,17 @@ public class ServiceFacade {
 	}
 
 	public Train findTrainById(String id) {
-		return trainRepository.findById(id).get();
+		try {
+			Optional<Train> optTrain = trainRepository.findById(id);
+			if(optTrain!=null) {
+				return trainRepository.findById(id).get();	
+			}
+		}catch(java.util.NoSuchElementException e) {
+			return null;
+		}
+
+		return null;
+		
 	}
 
 	public Train getTrainById(String id) throws Exception {
@@ -731,11 +756,8 @@ public class ServiceFacade {
 		return trainRepository.save(train);
 	}
 
-	public Wagons addWagon(Wagons wagon) {
-		return wagonRepository.save(wagon);
-	}
 
-	public Resources addResources(Resources resources) {
+	public Resources saveResources(Resources resources) {
 		return resourceRepository.save(resources);
 	}
 
@@ -749,6 +771,17 @@ public class ServiceFacade {
 			}
 		}
 		return wagons.toArray(new Wagons[wagons.size()]);
+	}
+	
+	public Resources[] findResourcesById(String trainId) {
+		List<Resources> resources = new ArrayList<Resources>();
+
+		for (Resources resource : resourceRepository.findAll()) {
+			if (resource.getInternalId().equals(trainId)) {
+				resources.add(resource);
+			}
+		}
+		return resources.toArray(new Resources[resources.size()]);
 	}
 	// =======================================================
 
@@ -800,14 +833,24 @@ public class ServiceFacade {
 		}
 
 	}
+	
+	public void saveArtifacts(Artifacts artifact) {
+			artifactRepository.save(artifact);
+	}
 
 	public Resources saveResource(Resources resource) {
 		return resourceRepository.save(resource);
 	}
+	
+	
 
 	public Wagons saveWagon(Wagons wagon) {
 		return wagonRepository.save(wagon);
 
+	}
+	
+	public Artifacts saveArtifact(Artifacts artifact) {
+		return artifactRepository.save(artifact);
 	}
 
 	public Iterable<Resources> saveResourcesAll(Resources[] resources) {
@@ -886,5 +929,7 @@ public class ServiceFacade {
 				StandardCharsets.UTF_8).forEach(System.out::println);
 
 	}
+
+
 
 }

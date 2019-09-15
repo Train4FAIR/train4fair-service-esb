@@ -3,14 +3,14 @@ version: '3'
 services:
 # APP  ***************************************************************************************
   microservices: 
-    image: jbjares/train-model-service:v8
+    image: jbjares/train-model-service:v10
     ports:
-    - 80:80
+    - 9091:9091
     links:
     - mongo
     depends_on:
     - mongo
-    command: bash -c "cd /app/train-microservices-esb && mvn install -DskipTests && mvn spring-boot:run"
+    command: bash -c "cd /app/train-microservices-esb && mvn install -DskipTests && mvn spring-boot:run -Dserver.address=0.0.0.0 -Dserver.port=9091"
 
 
 # DB  ***************************************************************************************
@@ -26,6 +26,7 @@ services:
     command: mongod --smallfiles --logpath=/dev/null # --quiet
     
     
+
 
     
     

@@ -14,12 +14,10 @@ import org.springframework.stereotype.Repository;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-
 @XmlRootElement
 @Repository
 @Document(collection = "artifacts")
-public class Artifacts implements Serializable{
-
+public class Artifacts implements Serializable {
 
 	private static final long serialVersionUID = -7369246201862747847L;
 
@@ -27,19 +25,18 @@ public class Artifacts implements Serializable{
 	@Expose
 	private String name;//
 
-	@SerializedName("filename")//
+	@SerializedName("filename") //
 	@Expose
 	private String filename;
 
-	@SerializedName("filedata")//
+	@SerializedName("filedata") //
 	@Expose
 	private String filedata;
 
-	@SerializedName("format")//
+	@SerializedName("format") //
 	@Expose
 	private String format;//
 
-	
 	@SerializedName("checksum")
 	@Expose
 	private String checksum;
@@ -48,31 +45,42 @@ public class Artifacts implements Serializable{
 	@Expose
 	private String fileUrl;
 
-	
+	@SerializedName("extension")
+	@Expose
+	private String extension;
+
 	@SerializedName("description")
 	@Expose
 	private String description;
-	
+
 	@Id
 	private ObjectId _id;
-	
 
-public ObjectId get_id() {
+	
+	
+	
+	
+	public String getExtension() {
+		return extension;
+	}
+
+	public void setExtension(String extension) {
+		this.extension = extension;
+	}
+
+	public ObjectId get_id() {
 		return _id;
 	}
 
 	public void set_id(ObjectId _id) {
 		this._id = _id;
 	}
-	
-    @SerializedName("internalId")
-    @Expose
+
+	@SerializedName("internalId")
+	@Expose
 	private String internalId;
-    
-    
-	
-	
-    public String getInternalId() {
+
+	public String getInternalId() {
 		return internalId;
 	}
 
@@ -81,14 +89,9 @@ public ObjectId get_id() {
 	}
 
 	@SerializedName("resourceId")
-    @Expose
+	@Expose
 	private String resourceId;
-    
 
-
-
-	
-	
 	public String getResourceId() {
 		return resourceId;
 	}
@@ -155,7 +158,6 @@ public ObjectId get_id() {
 		this.fileUrl = fileUrl;
 	}
 
-
 	/**
 	 * "The checksum is an auto-genereted field which aims to be the holder of the
 	 * MD5 hash, used to validate the integrity of the all files under the link
@@ -191,8 +193,6 @@ public ObjectId get_id() {
 		this.checksum = checksum;
 	}
 
-
-
 	/**
 	 * "Occurrence: 1 This field aims to hold an optional name for the artifact
 	 * instance."
@@ -217,7 +217,6 @@ public ObjectId get_id() {
 	public void setName(String name) {
 		this.name = name;
 	}
-
 
 	/**
 	 * "This field aims to hold the concrete name of the file which is in charger.
@@ -296,5 +295,4 @@ public ObjectId get_id() {
 		this.format = format;
 	}
 
-	
 }
