@@ -86,55 +86,66 @@ public class ServiceInterfaces {
 //		return gson.toJson(facade.getResult(savedTrain));
 //	}
 	// ===================================================================================================================
-
-	// ===================================================================================================================
 	@PostMapping(value = "/train/add/artifacts/webdav/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	Train addArtifactsToWebDav(@PathVariable String trainId) throws Exception {
 		Train trainn = facade.findTrainById(trainId);
-
-		for (int i = 0; i < trainn.getWagons().length; i++) {
-			Wagons wagons = trainn.getWagons()[i];
-
-			if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
-				continue;
-			}
-
-			for (int j = 0; j < trainn.getWagons()[i].getResources().length; j++) {
-				Resources resources = trainn.getWagons()[i].getResources()[j];
-
-				if ((resources == null) || (!resources.getInternalId().equals(trainId))) {
-					continue;
-				}
-				// ===========================================
-				if (resources.getArtifacts() == null || resources.getArtifacts().length == 0) {
-					continue;
-				}
-
-				List<Artifacts> artifactsList = new ArrayList<Artifacts>();
-
-				if (resources.getArtifacts() != null && resources.getArtifacts().length > 0) {
-					System.out.println("==========================================");
-					for (Artifacts artifact : resources.getArtifacts()) {
-						Artifacts artifacts = facade.sendToDav(artifact, trainId);
-						artifactsList.add(artifacts);
-					}
-					System.out.println("==========================================");
-					resources.setArtifacts(artifactsList.toArray(new Artifacts[artifactsList.size()]));
-					trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
-					// ===========================================
-					trainn = facade.saveTrainBasic(trainn);
-					// ===========================================
-					continue;
-				}
-
-				// ===========================================
-			}
-
+		Artifacts[] artifactsArr = facade.findArtifactsById(trainId);
+		System.out.println("length: "+(trainn.getWagons().length-1));
+		for(int i=0;i<=trainn.getWagons().length-1;i++) {
+			Artifacts artifacts = artifactsArr[i];
+			artifacts = facade.sendToDav(artifacts, trainId);
 		}
-
-		return facade.findTrainById(trainId);
-
+		
+		return trainn;
 	}
+	// ===================================================================================================================
+//	@PostMapping(value = "/train/add/artifacts/webdav/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
+//	Train addArtifactsToWebDav(@PathVariable String trainId) throws Exception {
+//		Train trainn = facade.findTrainById(trainId);
+//
+//		for (int i = 0; i < trainn.getWagons().length; i++) {
+//			Wagons wagons = trainn.getWagons()[i];
+//
+//			if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
+//				continue;
+//			}
+//
+//			for (int j = 0; j < trainn.getWagons()[i].getResources().length; j++) {
+//				Resources resources = trainn.getWagons()[i].getResources()[j];
+//
+//				if ((resources == null) || (!resources.getInternalId().equals(trainId))) {
+//					continue;
+//				}
+//				// ===========================================
+//				if (resources.getArtifacts() == null || resources.getArtifacts().length == 0) {
+//					continue;
+//				}
+//
+//				List<Artifacts> artifactsList = new ArrayList<Artifacts>();
+//
+//				if (resources.getArtifacts() != null && resources.getArtifacts().length > 0) {
+//					System.out.println("==========================================");
+//					for (Artifacts artifact : resources.getArtifacts()) {
+//						Artifacts artifacts = facade.sendToDav(artifact, trainId);
+//						artifactsList.add(artifacts);
+//					}
+//					System.out.println("==========================================");
+//					resources.setArtifacts(artifactsList.toArray(new Artifacts[artifactsList.size()]));
+//					trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
+//					// ===========================================
+//					trainn = facade.saveTrainBasic(trainn);
+//					// ===========================================
+//					continue;
+//				}
+//
+//				// ===========================================
+//			}
+//
+//		}
+//
+//		return facade.findTrainById(trainId);
+//
+//	}
 	// ===================================================================================================================
 	// ===================================================================================================================
 

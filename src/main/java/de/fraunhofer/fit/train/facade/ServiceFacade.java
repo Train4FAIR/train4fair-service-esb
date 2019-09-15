@@ -3,6 +3,7 @@ package de.fraunhofer.fit.train.facade;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -211,6 +212,10 @@ public class ServiceFacade {
 		wagonRepository.deleteAll();
 	}
 	
+	public void deleteAllArtifacts() {
+		artifactRepository.deleteAll();
+	}
+	
 	public void deleteAllResources() throws IOException, NoSuchAlgorithmException {
 		resourceRepository.deleteAll();
 	}
@@ -322,27 +327,46 @@ public class ServiceFacade {
 
 		JSONObject env;
 		env = trainServiceLocator.locateEnvironment(name, type, token);
-		Sardine sardine = SardineFactory.begin(env.getString("user"), env.getString("pass"));
+		
+		String username = env.getString("user");
+		String password = env.getString("pass");
+		Sardine sardine = SardineFactory.begin(username,password);
 		try {
 			String filePath = "/tmp/webdav/";
 			if (!new File(filePath).exists()) {
 				new File(filePath).createNewFile();
 			}
-			String webdavdir = "http://"+env.getString("host")+":"+env.getString("port");
+			String host = env.getString("host");
+			String port = env.getString("port");
+			
+			String webdavdir = "http://"+host+":"+port;
 			String url = webdavdir + "/" + trainId;
 			if (trainId.equals(artifacts.getInternalId())) {
+				System.out.println("sardine url: "+url);
 				Boolean existURL = sardine.exists(url);
 				if (!existURL) {
 					sardine.createDirectory(url);
 				}
 			}
-
-			FileUtils.writeStringToFile(new File(filePath), artifacts.getFiledata());
-			byte[] data = FileUtils.readFileToByteArray(new File(filePath));
-			byte[] decoded = Base64.getDecoder().decode(data);
-			InputStream stream = new ByteArrayInputStream(decoded);
-
-			sardine.put(url + "/" + artifacts.getName().trim(), stream);
+			String filedata = artifacts.getFiledata();
+			String filename = artifacts.getFilename();
+			System.out.println(filedata);
+			System.out.println(filename);
+			filedata = filedata.split(",")[1];
+			filename = filename.replace("\"", "");
+			System.out.println(filedata);
+			System.out.println(filename);
+//			FileUtils.writeStringToFile(new File(filePath), filedata);
+//			FileOutputStream fos = new FileOutputStream(filePath);
+//			fos.write(Base64.decode(filedata));
+//			fos.close();
+			byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(filedata);
+			
+			//byte[] data = FileUtils.readFileToByteArray(new File(filePath));
+			//byte[] decoded = Base64.getDecoder().decode(fileBytes);
+			//InputStream stream = new ByteArrayInputStream(decoded);
+			System.out.println(fileBytes);
+			sardine.put(url + "/" + filename.trim(), fileBytes);
 
 			artifacts.setFiledata(null);
 			artifacts.setFileUrl(url);
@@ -354,6 +378,48 @@ public class ServiceFacade {
 		}
 
 	}
+	
+//	@SuppressWarnings({ "finally", "deprecation" })
+//	public Artifacts sendToDav(Artifacts artifacts, String trainId) throws IOException {
+//
+//		String name = env.getProperty("env.dav.name");
+//		String type = env.getProperty("env.dav.type");
+//		String token = env.getProperty("env.dav.token");
+//
+//		JSONObject env;
+//		env = trainServiceLocator.locateEnvironment(name, type, token);
+//		Sardine sardine = SardineFactory.begin(env.getString("user"), env.getString("pass"));
+//		try {
+//			String filePath = "/tmp/webdav/";
+//			if (!new File(filePath).exists()) {
+//				new File(filePath).createNewFile();
+//			}
+//			String webdavdir = "http://"+env.getString("host")+":"+env.getString("port");
+//			String url = webdavdir + "/" + trainId;
+//			if (trainId.equals(artifacts.getInternalId())) {
+//				Boolean existURL = sardine.exists(url);
+//				if (!existURL) {
+//					sardine.createDirectory(url);
+//				}
+//			}
+//
+//			FileUtils.writeStringToFile(new File(filePath), artifacts.getFiledata());
+//			byte[] data = FileUtils.readFileToByteArray(new File(filePath));
+//			byte[] decoded = Base64.getDecoder().decode(data);
+//			InputStream stream = new ByteArrayInputStream(decoded);
+//
+//			sardine.put(url + "/" + artifacts.getName().trim(), stream);
+//
+//			artifacts.setFiledata(null);
+//			artifacts.setFileUrl(url);
+//		} catch (Exception e) {
+//			throw new RuntimeException(e.getMessage(), e);
+//		} finally {
+//			sardine.shutdown();
+//			return artifacts;
+//		}
+//
+//	}
 
 	public Wagons findWagonById(String id) {
 		return wagonRepository.findById(id).get();
@@ -773,6 +839,18 @@ public class ServiceFacade {
 		return wagons.toArray(new Wagons[wagons.size()]);
 	}
 	
+	
+	public Artifacts[] findArtifactsById(String trainId) {
+		List<Artifacts> artifacts = new ArrayList<Artifacts>();
+
+		for (Artifacts artifact : artifactRepository.findAll()) {
+			if (artifact.getInternalId().equals(trainId)) {
+				artifacts.add(artifact);
+			}
+		}
+		return artifacts.toArray(new Artifacts[artifacts.size()]);
+	}
+	
 	public Resources[] findResourcesById(String trainId) {
 		List<Resources> resources = new ArrayList<Resources>();
 
@@ -929,6 +1007,12 @@ public class ServiceFacade {
 				StandardCharsets.UTF_8).forEach(System.out::println);
 
 	}
+
+
+
+
+
+
 
 
 
