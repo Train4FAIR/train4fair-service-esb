@@ -1,0 +1,20 @@
+{
+   "id":"3253c6ae.d9410a",
+   "type":"Wagon",
+   "z":"400c1baf.3ec1a4",
+   "_closeCallbacks":[
+
+   ],
+   "name":"Wagon BMI",
+   "wires":[
+      [
+         "a7a700bf.ff52b"
+      ]
+   ],
+   "_wireCount":1,
+   "_wire":"a7a700bf.ff52b",
+   "_events":{
+
+   },
+   "_eventsCount":1
+}

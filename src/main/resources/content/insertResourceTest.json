@@ -1,0 +1,31 @@
+{
+   "name":"Resource BMI",
+   "description":"Resource BMI to hold the Artifact Model",
+   "oci":{
+      "created":"28/06/2019",
+      "author":"jbjares@gmail.com",
+      "architecture":"AMD64",
+      "os":"LINUX",
+      "config":{
+         "user":"jbjares",
+         "exposedPorts":[
+            {
+               "port":"80:1880",
+               "protocol":"http"
+            }
+         ],
+         "cmd":[
+            "bash -c \"cd /app/train-model-service && mvn install -DskipTests && mvn spring-boot:run\""
+         ],
+         "volumes":[
+            "./data/db:/data/db"
+         ],
+         "env":[
+            "/root"
+         ],
+         "entrypoint":[
+            "/bin/bash/"
+         ]
+      }
+   }
+}

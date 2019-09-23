@@ -31,7 +31,7 @@ public class Wagons implements Serializable {
 	@Expose
 	private Resources[] resources;
 
-	@SerializedName("stationprofiles")
+	@SerializedName("stationProfiles")
 	@Expose
 	private StationProfiles stationProfiles;
 
@@ -45,6 +45,24 @@ public class Wagons implements Serializable {
 
 	@Id
 	private ObjectId _id;
+	
+	@SerializedName("internalPointer")
+	@Expose
+	private String internalPointer;
+	
+	
+
+	public String getInternalPointer() {
+		return internalPointer;
+	}
+
+	public void setInternalPointer(String internalPointer) {
+		this.internalPointer = internalPointer;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
 
 	/**
 	 * UC03 - Init

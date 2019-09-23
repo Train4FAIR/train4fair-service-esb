@@ -86,12 +86,9 @@ public class TrainMock {
 	
 	private Flow getFlow(File noderedWorkflow, String id) throws IOException, NoSuchAlgorithmException {
 		Flow flow = new Flow();
-		flow.setName(id+"_flow");
-		flow.setChecksum(TrainUtil.getChecksum(noderedWorkflow));
-		flow.setFilename(id+"_flow.json");
-		flow.setFileUrl("http://127.0.0.1/train/webdav/"+id+"/"+flow.getFlowID()+"_flow.json");
-		flow.setFormat(StandardCharsets.UTF_8.toString());
 		flow.setFlowID("e3be62f1.a8031");
+		flow.setFlowURL("http://127.0.0.1:9091/RepositoryService/train/5d87fbacca90820801b0eba0");
+		flow.setDescription("Some Description.");
 		return flow;
 	}
 
@@ -112,7 +109,7 @@ public class TrainMock {
 
 	private StationProfiles getStationProfiles() {
 		StationProfiles stationProfiles = new StationProfiles();
-		stationProfiles.setStationProfiles(new String[] {"DIABETES", "DIABETES", "DIABETES"});
+		stationProfiles.setStationProfile(new String[] {"DIABETES", "DIABETES", "DIABETES"});
 		return stationProfiles;
 	}
 

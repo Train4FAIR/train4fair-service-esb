@@ -1,0 +1,70 @@
+{
+   "name":"Wagon BMI Hepatitis",
+   "description":"Wagon for BMI Calculation",
+   "stationProfiles":{
+      "stationProfile":[
+         "Hepatitis",
+         "",
+         ""
+      ]
+   },
+   "checkMetadataAccess":"true",
+   "checkGeneralRegistryPolicy":"true",
+   "expectedTimePointsForAllpatientsFrom":"1000",
+   "expectedTimePointsForAllpatientsTo":"10000",
+   "cutValue":"10",
+   "shouldBeAggregated":"true",
+   "accessConstraints":{
+      "patientRegistry":"all",
+      "severity":"high",
+      "rareDisease":"true",
+      "treatmentCenter":"Hepatitis Center",
+      "restrictionsOnPersonalData":"true"
+   }
+}%{
+   "name":"Wagon BMI Cancer",
+   "description":"Wagon for BMI Calculation",
+   "stationProfiles":{
+      "stationProfile":[
+         "Cancer",
+         "",
+         ""
+      ]
+   },
+   "checkMetadataAccess":"true",
+   "checkGeneralRegistryPolicy":"true",
+   "expectedTimePointsForAllpatientsFrom":"1000",
+   "expectedTimePointsForAllpatientsTo":"10000",
+   "cutValue":"10",
+   "shouldBeAggregated":"true",
+   "accessConstraints":{
+      "patientRegistry":"all",
+      "severity":"high",
+      "rareDisease":"true",
+      "treatmentCenter":"Hepatitis Center",
+      "restrictionsOnPersonalData":"true"
+   }
+}%{
+   "name":"Wagon BMI Diabetes",
+   "description":"Wagon for BMI Calculation",
+   "stationProfiles":{
+      "stationProfile":[
+         "Cancer",
+         "",
+         ""
+      ]
+   },
+   "checkMetadataAccess":"true",
+   "checkGeneralRegistryPolicy":"true",
+   "expectedTimePointsForAllpatientsFrom":"1000",
+   "expectedTimePointsForAllpatientsTo":"10000",
+   "cutValue":"10",
+   "shouldBeAggregated":"true",
+   "accessConstraints":{
+      "patientRegistry":"all",
+      "severity":"high",
+      "rareDisease":"true",
+      "treatmentCenter":"Diabetes Center",
+      "restrictionsOnPersonalData":"true"
+   }
+}

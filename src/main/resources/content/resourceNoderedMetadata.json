@@ -1,0 +1,23 @@
+{
+   "id":"a7a700bf.ff52b",
+   "type":"Resource",
+   "z":"400c1baf.3ec1a4",
+   "_closeCallbacks":[
+
+   ],
+   "name":"Resource BMI",
+   "wires":[
+      [
+         "6790c04f.0a843",
+         "7f582200.0d3de",
+         "143c1a1a.d5b386",
+         "a750a598.c206e8",
+         "2c53a93f.524a96"
+      ]
+   ],
+   "_wireCount":5,
+   "_events":{
+
+   },
+   "_eventsCount":1
+}

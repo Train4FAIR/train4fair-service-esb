@@ -1,0 +1,40 @@
+{
+    "wires" : [ 
+        [ 
+            "a7a700bf.ff52b", 
+            "b7a700bf.ff52c", 
+            "c7a700bf.ff52d"
+        ]
+    ],
+    "_wire" : "a7a700bf.ff52b%b7a700bf.ff52c%c7a700bf.ff52d",
+    "name" : "Wagon BMI",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "c5d826b7.180808",
+    "type" : "Wagon",
+    "_wireCount" : "3",
+}%{
+    "wires" : [ 
+        [ 
+            "e7a700bf.ff52f"
+        ]
+    ],
+    "_wire" : "e7a700bf.ff52f",
+    "name" : "Wagon BMI",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "d5d826b7.180809",
+    "type" : "Wagon",
+    "_wireCount" : "1",
+}%{
+    "wires" : [ 
+        [ 
+            "e7a700bf.ff52f", 
+            "f7a700bf.ff52g"
+        ]
+    ],
+    "_wire" : "e7a700bf.ff52f%f7a700bf.ff52g",
+    "name" : "Wagon BMI",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "e5d826b7.180800",
+    "type" : "Wagon",
+    "_wireCount" : "2",
+}

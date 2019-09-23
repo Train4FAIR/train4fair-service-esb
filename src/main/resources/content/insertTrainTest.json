@@ -1,0 +1,127 @@
+{
+   "name":"BMI Train",
+   "description":"Train for BMI Calculation",
+   "sourceRepository":"Fraunhofer",
+   "userToken":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtZXNzYWdlIjoiSldUIFJ1bGVzISIsImlhdCI6MTQ1OTQ0ODExOSwiZXhwIjoxNDU5NDU0NTE5fQ.-yIVBD5b73C75osbmwwshQNRC7frWUYrqaTjTpza2y4",
+   "internalId":"5d85a4deca90827e9e05fc6a",
+   "internalVersion":"5d85a4deca90827e9e05fc6b5d85a4deca90827e9e05fc6c_21.09.2019",
+   "internalPointer":"5d85a4deca90827e9e05fc6d",
+   "datacite":{
+      "language":"EN_ENGLISH",
+      "version":"1.0.0",
+      "publicationYear":"2019",
+      "publisher":"DataCite",
+      "identifier":{
+         "identifierType":"DOI",
+         "content":"10.5072/example-full"
+      },
+      "creators":{
+         "creator":[
+            null,
+            {
+               "affiliation":"Fraunhofer FIT",
+               "givenName":"Joao Bosco Jares",
+               "familyName":"Alves Chaves",
+               "creatorName":{
+                  "nameType":"",
+                  "content":"Joao Bosco Jares MSc."
+               },
+               "nameIdentifier":{
+                  "nameIdentifierScheme":"ORCID",
+                  "schemeURI":"http://orcid.org/",
+                  "content":"https://orcid.org/0000-0001-6066-2602"
+               }
+            }
+         ]
+      },
+      "subjects":{
+         "subject":[
+            null,
+            {
+               "schemeURI":"http://dewey.info/",
+               "content":"BMI Train for Computer Science",
+               "subjectScheme":"dewey"
+            }
+         ]
+      },
+      "dates":{
+         "date":[
+            null,
+            {
+               "dateType":"VALID",
+               "dateInformation":"200",
+               "content":"28/06/2019"
+            }
+         ]
+      },
+      "formats":{
+         "format":[
+            null,
+            {
+               "content":"application/json"
+            }
+         ]
+      },
+      "rightsList":{
+         "rights":[
+            null,
+            {
+               "rightsURI":"http://creativecommons.org/publicdomain/zero/1.0/",
+               "content":"CC0 1.0 Universal"
+            }
+         ]
+      },
+      "titles":{
+         "title":[
+            null,
+            {
+               "content":"BMI  Train ",
+               "titleType":"ALTERNATIVETITLE"
+            }
+         ]
+      },
+      "descriptions":{
+         "description":[
+            null,
+            {
+               "descriptionType":"TECHNICALINFO",
+               "content":"Calculates the BMI of the Patients in a specific data center"
+            }
+         ]
+      },
+      "contributors":{
+         "contributor":[
+            null,
+            {
+               "affiliation":"Frauhofer Fit",
+               "givenName":"Yeliz",
+               "familyName":"Ucer",
+               "contributorType":"PROJECTMANAGER",
+               "contributorName":"Yeliz Ucer",
+               "nameIdentifier":{
+                  "nameIdentifierScheme":"ORCID"
+               }
+            }
+         ]
+      },
+      "fundingReferences":{
+         "fundingReference":[
+            null,
+            {
+               "funderName":"Smith Care",
+               "awardNumber":"000-6687687-678678",
+               "awardTitle":"Fair Metadata",
+               "funderIdentifier":{
+                  "funderIdentifierType":"OTHER",
+                  "content":""
+               }
+            }
+         ]
+      },
+      "resourceType":{
+         "resourceTypeGeneral":"TRAIN",
+         "content":"Software"
+      }
+   },
+   "isAccessConstraintsOk":"TRAIN"
+}

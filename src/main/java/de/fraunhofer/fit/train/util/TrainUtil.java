@@ -16,17 +16,64 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RestController;
 
+import de.fraunhofer.fit.train.facade.ServiceFacade;
+import de.fraunhofer.fit.train.model_v2.nodered.BasicMetadataNoderedNODE;
+
+@EnableAspectJAutoProxy
+@RestController
+@Service
 public class TrainUtil {
 	
+	
+    @Autowired
+    private ServiceFacade facade;
+    
+    
 	public  static String  ByteArrayToString(byte[] arr) {
 		String str = new String(arr);
 		return str;
 
+	}
+	
+
+	public static String getChechSumCRC32ByByteArray(byte[] byteArr){
+		
+		String str = "Generate CRC32 Checksum For Byte Array Example";
+		
+		//Convert string to bytes
+		byte bytes[] = str.getBytes();
+		
+		Checksum checksum = new CRC32();
+		
+		/*
+		 * To compute the CRC32 checksum for byte array, use
+		 * 
+		 * void update(bytes[] b, int start, int length)
+		 * method of CRC32 class.
+		 */
+		 
+		checksum.update(bytes,0,bytes.length);
+		
+		/*
+		 * Get the generated checksum using
+		 * getValue method of CRC32 class.
+		 */
+		long lngChecksum = checksum.getValue();
+		
+		System.out.println("CRC32 checksum for byte array is :" + lngChecksum);
+		
+		return  Long.toString(lngChecksum);
 	}
 
 	public static String getChecksum(Serializable object) throws IOException, NoSuchAlgorithmException {
@@ -180,5 +227,29 @@ public class TrainUtil {
         writer.close();
 
     }
+
+	public String convertTwoDimensionsArrIntoStr(String[][] wires, String internalId) {
+		BasicMetadataNoderedNODE[] wagonNodeArr = facade.findWagonsArrByInternalId(internalId);
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i<wagonNodeArr.length;i++) {
+        	BasicMetadataNoderedNODE wagonNode = wagonNodeArr[i];
+        	for(int j=0;j<wagonNode.getWires().length;j++) {
+        		String wiresArr[] = wagonNode.getWires()[j];
+        		for(int h = 0; h<wiresArr.length;h++) {
+        			String wireStr =  wiresArr[h];
+        			sb.append(wireStr);
+        			sb.append("%");
+        		}
+        	}
+
+        }
+        String result = sb.toString();
+        if(result.endsWith("%")) {
+        	result = result.substring(0, result.length()-1);
+        }
+        
+        System.out.println(result);
+		return result;
+	}
 
 }

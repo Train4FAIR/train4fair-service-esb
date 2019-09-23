@@ -18,7 +18,9 @@ public class SwaggerConfig extends WebMvcConfigurationSupport {
 	@Bean
 	public Docket productApi() {
 		return new Docket(DocumentationType.SWAGGER_2).select()
-				.apis(RequestHandlerSelectors.basePackage("de.fraunhofer.fit.train.service")).build();
+				//.apis(RequestHandlerSelectors.basePackage("de.fraunhofer.fit.train.services.exposed"))
+				.apis(RequestHandlerSelectors.basePackage("de.fraunhofer.fit.train.services.internal"))
+				.build();
 
 	}
 

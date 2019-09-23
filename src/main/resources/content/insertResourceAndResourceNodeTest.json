@@ -1,0 +1,91 @@
+{
+    "wires" : [ 
+        [ 
+            "6790c04f.0a843", 
+            "7f582200.0d3de", 
+            "143c1a1a.d5b386", 
+            "a750a598.c206e8", 
+            "2c53a93f.524a96"
+        ]
+    ],
+    "name" : "Resource BMI",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "c7a700bf.ff52d",
+    "type" : "Resource",
+    "_wireCount" : "5"
+}%{
+    "wires" : [ 
+        [ 
+            "6790c04f.0a843", 
+            "7f582200.0d3de", 
+            "143c1a1a.d5b386", 
+            "a750a598.c206e8", 
+            "2c53a93f.524a96"
+        ]
+    ],
+    "name" : "Resource BMI",
+    "z" : "e7a700bf.ff52f",
+    "id" : "e7a700bf.ff52f",
+    "type" : "Resource",
+    "_wireCount" : "5",
+}%{
+    "wires" : [ 
+        [ 
+            "6790c04f.0a843", 
+            "7f582200.0d3de", 
+            "143c1a1a.d5b386", 
+            "a750a598.c206e8", 
+            "2c53a93f.524a96"
+        ]
+    ],
+    "name" : "Resource BMI",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "f7a700bf.ff52g",
+    "type" : "Resource",
+    "_wireCount" : "5",
+}%{
+   "wires" : [ 
+        [ 
+            "6790c04f.0a843", 
+            "7f582200.0d3de", 
+            "143c1a1a.d5b386", 
+            "a750a598.c206e8", 
+            "2c53a93f.524a96"
+        ]
+    ],
+    "name" : "Resource BMI",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "e7a700bf.ff52f",
+    "type" : "Resource",
+    "_wireCount" : "5",
+}%{
+    "wires" : [ 
+        [ 
+            "6790c04f.0a843", 
+            "7f582200.0d3de", 
+            "143c1a1a.d5b386", 
+            "a750a598.c206e8", 
+            "2c53a93f.524a96"
+        ]
+    ],
+    "name" : "Resource BMI",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "a7a700bf.ff52b",
+    "type" : "Resource",
+    "_wireCount" : "5",
+}%{
+    "wires" : [ 
+        [ 
+            "6790c04f.0a843", 
+            "7f582200.0d3de", 
+            "143c1a1a.d5b386", 
+            "a750a598.c206e8", 
+            "2c53a93f.524a96"
+        ]
+    ],
+    "name" : "Resource BMI",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "b7a700bf.ff52c",
+    "type" : "Resource",
+    "_wireCount" : "5",
+}

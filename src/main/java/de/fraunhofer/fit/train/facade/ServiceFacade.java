@@ -1,11 +1,8 @@
 package de.fraunhofer.fit.train.facade;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -22,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -70,14 +66,23 @@ import de.fraunhofer.fit.train.model_v2.doi.datacitie.helper.RelationTypeDatacit
 import de.fraunhofer.fit.train.model_v2.doi.datacitie.helper.ResourceTypeGeneralDataciteEnum;
 import de.fraunhofer.fit.train.model_v2.doi.datacitie.helper.StationProfileEnum;
 import de.fraunhofer.fit.train.model_v2.doi.datacitie.helper.TitleTypeDataciteEnum;
+import de.fraunhofer.fit.train.model_v2.nodered.ArtifactsMetadataNoderedNODE;
+import de.fraunhofer.fit.train.model_v2.nodered.ResourcesMetadataNoderedNODE;
+import de.fraunhofer.fit.train.model_v2.nodered.TrainMetadataNoderedNODE;
+import de.fraunhofer.fit.train.model_v2.nodered.WagonsMetadataNoderedNODE;
 import de.fraunhofer.fit.train.model_v2.station.StationProfiles;
 import de.fraunhofer.fit.train.persistence.IArtifactRepository;
+import de.fraunhofer.fit.train.persistence.IArtifactsRepositoryNode;
 import de.fraunhofer.fit.train.persistence.IInternalIdRepository;
 import de.fraunhofer.fit.train.persistence.IInternalPointerRepository;
 import de.fraunhofer.fit.train.persistence.IResourceRepository;
+import de.fraunhofer.fit.train.persistence.IResourcesRepositoryNode;
 import de.fraunhofer.fit.train.persistence.ITrainRepository;
+import de.fraunhofer.fit.train.persistence.ITrainRepositoryNode;
 import de.fraunhofer.fit.train.persistence.IWagonRepository;
+import de.fraunhofer.fit.train.persistence.IWagonsRepositoryNode;
 import de.fraunhofer.fit.train.servicelocator.TrainServiceLocator;
+import de.fraunhofer.fit.train.util.TrainUtil;
 
 @EnableAspectJAutoProxy
 @Service
@@ -109,6 +114,25 @@ public class ServiceFacade {
 
 	@Autowired
 	private IArtifactRepository artifactRepository;
+	
+	@Autowired
+	private ITrainRepositoryNode trainRepositoryNode;
+	
+	
+	@Autowired
+	private IWagonsRepositoryNode wagonRepositoryNode;
+	
+	@Autowired
+	private IResourcesRepositoryNode resourcesRepositoryNode;
+	
+	
+	@Autowired
+	private IArtifactsRepositoryNode artifactsRepositoryNode;
+	
+	@Autowired
+	private TrainUtil trainUtil;
+	
+	
 
 	public String getInternalId() {
 		InternalId internalId = internalIdRepository.save(new InternalId());
@@ -280,8 +304,8 @@ public class ServiceFacade {
 
 	// }
 
-	public Artifacts getlandpage(String trainId) throws Exception {
-		Train train = findTrainById(trainId);
+	public Artifacts getlandpage(String internalId) throws Exception {
+		Train train = findTrainByInternalId(internalId);
 		Artifacts artifact = null;
 
 		Iterable<Artifacts> artifactList = artifactRepository.findAll();
@@ -289,21 +313,21 @@ public class ServiceFacade {
 		while (it.hasNext()) {
 			artifact = it.next();
 
-			if (artifact.getInternalId().equals(trainId) && artifact.getName().equals(WELCOME_HTML)) {
+			if (artifact.getInternalId().equals(internalId) && artifact.getName().equals(WELCOME_HTML)) {
 				continue;
 			} else {
 
 			}
 
 			artifact = new Artifacts();
-			String landpage = customlandpage(train, trainId);
+			String landpage = customlandpage(train, internalId);
 			artifact.setDescription("landpage");
 			artifact.setFilename(WELCOME_HTML);
 			artifact.setFormat(StandardCharsets.UTF_8.toString());
-			artifact.setInternalId(trainId);
+			artifact.setInternalId(internalId);
 			artifact.setName(WELCOME_HTML);
 			artifact.setFiledata(landpage);
-			Artifacts artifacts = sendToDav(artifact, trainId);
+			Artifacts artifacts = sendToDav(artifact, internalId);
 
 //			RelatedIdentifier relatedIdentifier = new RelatedIdentifier();
 //			relatedIdentifier.setContent(artifacts.getFileUrl());
@@ -350,26 +374,27 @@ public class ServiceFacade {
 			}
 			String filedata = artifacts.getFiledata();
 			String filename = artifacts.getFilename();
-			System.out.println(filedata);
-			System.out.println(filename);
+			if((filename==null || "".equals(filename))&&artifacts.getName()!=null &&
+					!"".equals(artifacts.getName())) {
+				filename = artifacts.getName();	
+			}
+			if(filename==null || "".equals(filename)){
+				throw new RuntimeException("The Artifacts was not sent to webdav since the property name/filename was not set.");
+			}
 			filedata = filedata.split(",")[1];
 			filename = filename.replace("\"", "");
-			System.out.println(filedata);
-			System.out.println(filename);
-//			FileUtils.writeStringToFile(new File(filePath), filedata);
-//			FileOutputStream fos = new FileOutputStream(filePath);
-//			fos.write(Base64.decode(filedata));
-//			fos.close();
+
 			byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(filedata);
 			
-			//byte[] data = FileUtils.readFileToByteArray(new File(filePath));
-			//byte[] decoded = Base64.getDecoder().decode(fileBytes);
-			//InputStream stream = new ByteArrayInputStream(decoded);
-			System.out.println(fileBytes);
-			sardine.put(url + "/" + filename.trim(), fileBytes);
+			String filedavUrl = url + "/" + filename.trim();
+			if(sardine.exists(filedavUrl)) {
+				return null;
+			}
+			sardine.put(filedavUrl, fileBytes);
 
 			artifacts.setFiledata(null);
 			artifacts.setFileUrl(url);
+			artifacts.setChecksum(TrainUtil.getChecksum(fileBytes));
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} finally {
@@ -429,12 +454,15 @@ public class ServiceFacade {
 		return resourceRepository.findById(id).get();
 	}
 
-	public Train findTrainById(String id) {
+	public Train findTrainByInternalId(String internalId) {
 		try {
-			Optional<Train> optTrain = trainRepository.findById(id);
-			if(optTrain!=null) {
-				return trainRepository.findById(id).get();	
+			Iterable<Train> trainList = trainRepository.findAll();
+			for(Train train: trainList) {
+				if(train.getInternalId()!=null && !"".equals(train.getInternalId())&&train.getInternalId().equals(internalId)) {
+					return train;
+				}
 			}
+
 		}catch(java.util.NoSuchElementException e) {
 			return null;
 		}
@@ -538,33 +566,33 @@ public class ServiceFacade {
 		Result result = new Result();
 
 		StationProfiles stationProfiles1 = new StationProfiles();
-		stationProfiles1.setStationProfiles(new String[] { "Obesity", "Obesity", "Obesity" });
+		stationProfiles1.setStationProfile(new String[] { "Obesity", "Obesity", "Obesity" });
 
 		StationProfiles stationProfiles2 = new StationProfiles();
-		stationProfiles1.setStationProfiles(new String[] { "Obesity", "Obesity", "Diabetes" });
+		stationProfiles2.setStationProfile(new String[] { "Obesity", "Obesity", "Diabetes" });
 
 		StationProfiles stationProfiles3 = new StationProfiles();
-		stationProfiles1.setStationProfiles(new String[] { "Diabetes", "Diabetes", "Diabetes" });
+		stationProfiles3.setStationProfile(new String[] { "Diabetes", "Diabetes", "Diabetes" });
 
 		StationProfiles stationProfiles4 = new StationProfiles();
-		stationProfiles1.setStationProfiles(new String[] { "Obesity", "Diabetes", "Diabetes" });
+		stationProfiles4.setStationProfile(new String[] { "Obesity", "Diabetes", "Diabetes" });
 
 		StationProfiles stationProfiles5 = new StationProfiles();
-		stationProfiles1.setStationProfiles(new String[] { "Obesity", "Diabetes", "Diabetes" });
+		stationProfiles5.setStationProfile(new String[] { "Obesity", "Diabetes", "Diabetes" });
 
 		StationProfiles stationProfiles6 = new StationProfiles();
-		stationProfiles1.setStationProfiles(new String[] { "Obesity", "Cancer", "Cancer" });
+		stationProfiles6.setStationProfile(new String[] { "Obesity", "Cancer", "Cancer" });
 
 		StationProfiles stationProfiles7 = new StationProfiles();
-		stationProfiles1.setStationProfiles(new String[] { "Cancer", "Cancer", "Cancer" });
+		stationProfiles7.setStationProfile(new String[] { "Cancer", "Cancer", "Cancer" });
 
 		StationProfiles stationProfiles8 = new StationProfiles();
-		stationProfiles1.setStationProfiles(new String[] { "Obesity", "Diabetes", "Cancer" });
+		stationProfiles8.setStationProfile(new String[] { "Obesity", "Diabetes", "Cancer" });
 
 		//
-		if (stationProfiles1.getStationProfiles()[0].equals("Obesity".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[1].equals("Obesity".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[2].equals("Obesity".toLowerCase())) {
+		if (stationProfiles1.getStationProfile()[0].equals("Obesity".toLowerCase())
+				&& stationProfiles1.getStationProfile()[1].equals("Obesity".toLowerCase())
+				&& stationProfiles1.getStationProfile()[2].equals("Obesity".toLowerCase())) {
 
 			result.setCohortSizeAfterEliminatingPatientswithNOAgeData(
 					"Cohort size after eliminating patients with no age data: 99");
@@ -574,9 +602,9 @@ public class ServiceFacade {
 		}
 
 		//
-		if (stationProfiles1.getStationProfiles()[0].equals("Obesity".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[1].equals("Obesity".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[2].equals("Diabetes".toLowerCase())) {
+		if (stationProfiles1.getStationProfile()[0].equals("Obesity".toLowerCase())
+				&& stationProfiles1.getStationProfile()[1].equals("Obesity".toLowerCase())
+				&& stationProfiles1.getStationProfile()[2].equals("Diabetes".toLowerCase())) {
 
 			result.setCohortSizeAfterEliminatingPatientswithNOAgeData(
 					"Cohort size after eliminating patients with no age data: 101");
@@ -586,9 +614,9 @@ public class ServiceFacade {
 		}
 
 		//
-		if (stationProfiles1.getStationProfiles()[0].equals("Obesity".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[1].equals("Diabetes".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[2].equals("Diabetes".toLowerCase())) {
+		if (stationProfiles1.getStationProfile()[0].equals("Obesity".toLowerCase())
+				&& stationProfiles1.getStationProfile()[1].equals("Diabetes".toLowerCase())
+				&& stationProfiles1.getStationProfile()[2].equals("Diabetes".toLowerCase())) {
 
 			result.setCohortSizeAfterEliminatingPatientswithNOAgeData(
 					"Cohort size after eliminating patients with no age data: 788");
@@ -598,9 +626,9 @@ public class ServiceFacade {
 		}
 
 		//
-		if (stationProfiles1.getStationProfiles()[0].equals("Diabetes".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[1].equals("Diabetes".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[2].equals("Diabetes".toLowerCase())) {
+		if (stationProfiles1.getStationProfile()[0].equals("Diabetes".toLowerCase())
+				&& stationProfiles1.getStationProfile()[1].equals("Diabetes".toLowerCase())
+				&& stationProfiles1.getStationProfile()[2].equals("Diabetes".toLowerCase())) {
 
 			result.setCohortSizeAfterEliminatingPatientswithNOAgeData(
 					"Cohort size after eliminating patients with no age data: 496");
@@ -610,9 +638,9 @@ public class ServiceFacade {
 		}
 
 		//
-		if (stationProfiles1.getStationProfiles()[0].equals("Obesity".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[1].equals("Obesity".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[2].equals("Cancer".toLowerCase())) {
+		if (stationProfiles1.getStationProfile()[0].equals("Obesity".toLowerCase())
+				&& stationProfiles1.getStationProfile()[1].equals("Obesity".toLowerCase())
+				&& stationProfiles1.getStationProfile()[2].equals("Cancer".toLowerCase())) {
 
 			result.setCohortSizeAfterEliminatingPatientswithNOAgeData(
 					"Cohort size after eliminating patients with no age data: 380");
@@ -621,9 +649,9 @@ public class ServiceFacade {
 			result.setRetrievedCohortSize("Retrieved cohort size 980");
 		}
 
-		if (stationProfiles1.getStationProfiles()[0].equals("Obesity".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[1].equals("Cancer".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[2].equals("Cancer".toLowerCase())) {
+		if (stationProfiles1.getStationProfile()[0].equals("Obesity".toLowerCase())
+				&& stationProfiles1.getStationProfile()[1].equals("Cancer".toLowerCase())
+				&& stationProfiles1.getStationProfile()[2].equals("Cancer".toLowerCase())) {
 
 			result.setCohortSizeAfterEliminatingPatientswithNOAgeData(
 					"Cohort size after eliminating patients with no age data: 103");
@@ -632,9 +660,9 @@ public class ServiceFacade {
 			result.setRetrievedCohortSize("Retrieved cohort size 801");
 		}
 
-		if (stationProfiles1.getStationProfiles()[0].equals("Cancer".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[1].equals("Cancer".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[2].equals("Cancer".toLowerCase())) {
+		if (stationProfiles1.getStationProfile()[0].equals("Cancer".toLowerCase())
+				&& stationProfiles1.getStationProfile()[1].equals("Cancer".toLowerCase())
+				&& stationProfiles1.getStationProfile()[2].equals("Cancer".toLowerCase())) {
 
 			result.setCohortSizeAfterEliminatingPatientswithNOAgeData(
 					"Cohort size after eliminating patients with no age data: 180");
@@ -643,9 +671,9 @@ public class ServiceFacade {
 			result.setRetrievedCohortSize("Retrieved cohort size 1200");
 		}
 
-		if (stationProfiles1.getStationProfiles()[0].equals("Obesity".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[1].equals("Diabetes".toLowerCase())
-				&& stationProfiles1.getStationProfiles()[2].equals("Cancer".toLowerCase())) {
+		if (stationProfiles1.getStationProfile()[0].equals("Obesity".toLowerCase())
+				&& stationProfiles1.getStationProfile()[1].equals("Diabetes".toLowerCase())
+				&& stationProfiles1.getStationProfile()[2].equals("Cancer".toLowerCase())) {
 
 			result.setCohortSizeAfterEliminatingPatientswithNOAgeData(
 					"Cohort size after eliminating patients with no age data: 200");
@@ -813,13 +841,17 @@ public class ServiceFacade {
 		return trainRepository.save(train);
 	}
 
-	public Train saveTrainAndDataciteFirstFlow(String trainStr) {
+	public Train saveTrain(String trainStr) {
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 		Train train = gson.fromJson(trainStr, Train.class);
-		if (train.getInternalId() != null) {
-			train.set_id(new ObjectId(train.getInternalId()));
-		}
 		return trainRepository.save(train);
+	}
+	
+	public Wagons saveWagon(String input) {
+		Gson gson = new Gson();
+		Wagons wagon = gson.fromJson(input, Wagons.class);
+		System.out.println(wagon);
+		return wagonRepository.save(wagon);
 	}
 
 
@@ -839,12 +871,25 @@ public class ServiceFacade {
 		return wagons.toArray(new Wagons[wagons.size()]);
 	}
 	
+	public Wagons findFirstWagonsById(String internalId) {
+		List<Wagons> wagons = new ArrayList<Wagons>();
+
+		for (Wagons wagon : wagonRepository.findAll()) {
+			if (wagon.getInternalId().equals(internalId)) {
+				wagons.add(wagon);
+			}
+		}
+		if(wagons.isEmpty()) {
+			return null;
+		}
+		return wagons.get(0);
+	}
 	
-	public Artifacts[] findArtifactsById(String trainId) {
+	public Artifacts[] findArtifactsByInternalId(String artifactId) {
 		List<Artifacts> artifacts = new ArrayList<Artifacts>();
 
 		for (Artifacts artifact : artifactRepository.findAll()) {
-			if (artifact.getInternalId().equals(trainId)) {
+			if (artifact.getInternalId().equals(artifactId)) {
 				artifacts.add(artifact);
 			}
 		}
@@ -860,6 +905,20 @@ public class ServiceFacade {
 			}
 		}
 		return resources.toArray(new Resources[resources.size()]);
+	}
+	
+	public Resources findFirstResourcesByInternalId(String internalId) {
+		List<Resources> resources = new ArrayList<Resources>();
+
+		for (Resources resource : resourceRepository.findAll()) {
+			if (resource.getInternalId().equals(internalId)) {
+				resources.add(resource);
+			}
+		}
+		if(resources.isEmpty()) {
+			return null;
+		}
+		return resources.get(0);
 	}
 	// =======================================================
 
@@ -912,8 +971,8 @@ public class ServiceFacade {
 
 	}
 	
-	public void saveArtifacts(Artifacts artifact) {
-			artifactRepository.save(artifact);
+	public Artifacts saveArtifacts(Artifacts artifact) {
+			return artifactRepository.save(artifact);
 	}
 
 	public Resources saveResource(Resources resource) {
@@ -989,31 +1048,250 @@ public class ServiceFacade {
 						train.getDescription() == null ? "BMI Description" : "Description about BMI Train");
 	}
 
-//	public static void main(String[] args) throws IOException {
-//		Train train = new Train();
-//		Datacite datacite = new Datacite();
-//		Identifier id = new Identifier();
-//		id.setContent("0123/98765");
-//		datacite.setIdentifier(id);
-//		train.setDatacite(datacite);
-//		train.setName("BMI Experiment");
-//		train.setDescription("This project aims to calculate the BMI of the Aachen population");
-//		System.out.println(customlandpage(train,"234567890"));
-//	}
 
-	public static void main(String[] args) throws IOException {
-		Files.lines(Paths.get(
-				"/Users/jbjares/workspaces/TrainmodelHelper/train-model-service/src/main/resources/content/script.py"),
-				StandardCharsets.UTF_8).forEach(System.out::println);
 
+	//== Nodered Metadata ==
+	//==============================================================================
+	
+	
+	//==Train
+	
+	public TrainMetadataNoderedNODE saveNoderedMetadataTrain(String trainStr) {
+		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+		TrainMetadataNoderedNODE trainNode = gson.fromJson(trainStr, TrainMetadataNoderedNODE.class);
+		return trainRepositoryNode.save(trainNode);
+	}
+	
+	public TrainMetadataNoderedNODE saveNoderedMetadataTrain(TrainMetadataNoderedNODE trainNode) {
+		TrainMetadataNoderedNODE result = trainRepositoryNode.save(trainNode);
+		return result;
+	}
+
+
+
+	public TrainMetadataNoderedNODE findFirstNoderedMetadataTrainByInternalId(String internalId) {
+		List<TrainMetadataNoderedNODE> trainNodeList = new ArrayList<TrainMetadataNoderedNODE>();
+
+		for (TrainMetadataNoderedNODE trainNode : trainRepositoryNode.findAll()) {
+			if (trainNode.getInternalId().equals(internalId)) {
+				trainNodeList.add(trainNode);
+			}
+		}
+		if(trainNodeList.isEmpty()) {
+			return null;
+		}
+		return trainNodeList.get(0);
+	}
+
+	public void deleteAllNoderedMetadataTrain() {
+		trainRepositoryNode.deleteAll();
+	}
+	
+	public Train findFirstTrainByInternalId(String internalId) {
+		List<Train> trainList = new ArrayList<Train>();
+
+		for (Train train : trainRepository.findAll()) {
+			if (train.getInternalId().equals(internalId)) {
+				trainList.add(train);
+			}
+		}
+		if(trainList.isEmpty()) {
+			return null;
+		}
+		return trainList.get(0);
+	}
+
+	public Train saveTrainAsStr(String input) {
+		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+		Train train = gson.fromJson(input, Train.class);
+		if (train.getInternalId() == null || train.getInternalPointer()==null) {
+			throw new RuntimeException("Error while saving the Train. The internalId or internalPointer attributes should be empty or null");
+		}
+		try {
+			return trainRepository.save(train);
+		}catch(Exception e) {
+			throw new RuntimeException("Fail to save the Train",e);
+		}	}
+	
+	public Train saveTrainAsObj(Train train) {
+		if (train.getInternalId() == null || train.getInternalPointer()==null) {
+			throw new RuntimeException("Error while saving the Train. The internalId or internalPointer attributes should be empty or null");
+		}
+		try {
+			return trainRepository.save(train);
+		}catch(Exception e) {
+			throw new RuntimeException("Fail to save the Train",e);
+		}
+		
+	}
+
+
+
+//==Wagon
+
+	public WagonsMetadataNoderedNODE saveNoderedMetadataWagon(WagonsMetadataNoderedNODE wagonNode) {
+		WagonsMetadataNoderedNODE result = wagonRepositoryNode.save(wagonNode);
+		return result;
+	}
+	
+	public WagonsMetadataNoderedNODE saveNoderedMetadataWagon(String input) {
+		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+		WagonsMetadataNoderedNODE wagonNode = gson.fromJson(input, WagonsMetadataNoderedNODE.class);
+		return wagonRepositoryNode.save(wagonNode);
+	}
+	
+	public WagonsMetadataNoderedNODE findNoderedMetadataWagonByInternalId(String id) {
+		try {
+			Optional<WagonsMetadataNoderedNODE> optTrain = wagonRepositoryNode.findById(id);
+			if(optTrain!=null) {
+				return wagonRepositoryNode.findById(id).get();	
+			}
+		}catch(java.util.NoSuchElementException e) {
+			return null;
+		}
+
+		return null;
+		
+	}
+
+	public void deleteAllNoderedMetadataWagon() {
+		wagonRepositoryNode.deleteAll();
+		
+	}
+	
+	public WagonsMetadataNoderedNODE[] findWagonsArrByInternalId(String internalId) {
+		List<WagonsMetadataNoderedNODE> wagonsList = new ArrayList<WagonsMetadataNoderedNODE>();
+
+		for (WagonsMetadataNoderedNODE wagon : wagonRepositoryNode.findAll()) {
+			if (internalId.equals(wagon.getInternalId())) {
+				wagonsList.add(wagon);
+			}
+		}
+		return wagonsList.toArray(new WagonsMetadataNoderedNODE[wagonsList.size()]);
+	}
+
+	//==Resources
+	
+	public ResourcesMetadataNoderedNODE saveNoderedMetadataResources(ResourcesMetadataNoderedNODE trainNode) {
+		ResourcesMetadataNoderedNODE result = resourcesRepositoryNode.save(trainNode);
+		return result;
+	}
+	
+	
+	public ResourcesMetadataNoderedNODE findNoderedMetadataResourcesByInternalId(String id) {
+		try {
+			Optional<ResourcesMetadataNoderedNODE> optTrain = resourcesRepositoryNode.findById(id);
+			if(optTrain!=null) {
+				return resourcesRepositoryNode.findById(id).get();	
+			}
+		}catch(java.util.NoSuchElementException e) {
+			return null;
+		}
+
+		return null;
+		
+	}
+	
+	public ResourcesMetadataNoderedNODE findFirstResourcesNodeById(String internalId) {
+		List<ResourcesMetadataNoderedNODE> resourceList = new ArrayList<ResourcesMetadataNoderedNODE>();
+
+		for (ResourcesMetadataNoderedNODE resourceNode : resourcesRepositoryNode.findAll()) {
+			if (resourceNode.getInternalId().equals(internalId)) {
+				resourceList.add(resourceNode);
+			}
+		}
+		if(resourceList.isEmpty()) {
+			return null;
+		}
+		return resourceList.get(0);
+	}
+	
+	
+
+	public void deleteAllNoderedMetadataResources() {
+		resourcesRepositoryNode.deleteAll();
+		
+	}
+//==Artifacts
+	
+	public ArtifactsMetadataNoderedNODE saveNoderedMetadataArtifacts(ArtifactsMetadataNoderedNODE trainNode) {
+		ArtifactsMetadataNoderedNODE result = artifactsRepositoryNode.save(trainNode);
+		return result;
+	}
+	
+	
+	public ArtifactsMetadataNoderedNODE findNoderedMetadataArtifactsByInternalId(String id) {
+		try {
+			Optional<ArtifactsMetadataNoderedNODE> optTrain = artifactsRepositoryNode.findById(id);
+			if(optTrain!=null) {
+				return artifactsRepositoryNode.findById(id).get();	
+			}
+		}catch(java.util.NoSuchElementException e) {
+			return null;
+		}
+
+		return null;
+		
+	}
+
+	public void deleteAllNoderedMetadataArtifacts() {
+		artifactsRepositoryNode.deleteAll();
+		
+	}
+	
+	public Artifacts findFirstArtifactByInternalId(String internalId) {
+		List<Artifacts> resources = new ArrayList<Artifacts>();
+
+		for (Artifacts artifact : artifactRepository.findAll()) {
+			if (artifact.getInternalId().equals(internalId)) {
+				resources.add(artifact);
+			}
+		}
+		if(resources.isEmpty()) {
+			return null;
+		}
+		return resources.get(0);
+	}
+	
+	//==
+
+	//==Execute
+	
+	public Train wrapperTheTrainObjects(String internalId) {
+		Train train = findFirstTrainByInternalId(internalId);
+		TrainMetadataNoderedNODE trainNode = findFirstNoderedMetadataTrainByInternalId(internalId);
+		WagonsMetadataNoderedNODE wagonNode = findNoderedMetadataWagonByInternalId(internalId);
+		
+		int trainWireCount = Integer.parseInt(trainNode.get_wireCount());
+		if(trainWireCount<=0) {
+			throw new RuntimeException("Please attach your Wagon on the Train Node");
+		}
+		
+		Wagons singleWagon = null;
+		if(trainWireCount==1) {
+			singleWagon = findFirstWagonsById(internalId);
+			String train_wire =  trainNode.get_wire();
+			String wangonNodeId = wagonNode.getId();
+			
+			if(train_wire.equals(wangonNodeId)) {
+				
+				
+			}
+			
+		}
+		
+		Wagons[] multipleWagon = null;
+		if(trainWireCount>1) {
+			multipleWagon = findWagonsById(internalId);
+		}
+		
+		return train;
 	}
 
 
 
 
 
-
-
-
-
+	
+	//==
 }

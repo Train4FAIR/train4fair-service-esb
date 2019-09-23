@@ -1,0 +1,61 @@
+{
+    "wires" : [ 
+        [ 
+            "6eef53cc.69466c"
+        ]
+    ],
+    "_wire" : "6eef53cc.69466c",
+    "name" : "build.sh",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "6790c04f.0a843",
+    "type" : "Artifact",
+    "_wireCount" : "1",
+}%{
+    "wires" : [ 
+        [ 
+            "6eef53cc.69466c"
+        ]
+    ],
+    "_wire" : "6eef53cc.69466c",
+    "name" : " Dockerfile",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "7f582200.0d3de",
+    "type" : "Artifact",
+    "_wireCount" : "1",
+}%{
+    "wires" : [ 
+        [ 
+            "6eef53cc.69466c"
+        ]
+    ],
+    "_wire" : "6eef53cc.69466c",
+    "name" : " input2.cql",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "143c1a1a.d5b386",
+    "type" : "Artifact",
+    "_wireCount" : "1",
+}%{
+    "wires" : [ 
+        [ 
+            "6eef53cc.69466c"
+        ]
+    ],
+    "_wire" : "6eef53cc.69466c",
+    "name" : "requirements.txt",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "a750a598.c206e8",
+    "type" : "Artifact",
+    "_wireCount" : "1",
+}%{
+    "wires" : [ 
+        [ 
+            "6eef53cc.69466c"
+        ]
+    ],
+    "_wire" : "6eef53cc.69466c",
+    "name" : "script.py",
+    "z" : "400c1baf.3ec1a4",
+    "id" : "2c53a93f.524a96",
+    "type" : "Artifact",
+    "_wireCount" : "1",
+}

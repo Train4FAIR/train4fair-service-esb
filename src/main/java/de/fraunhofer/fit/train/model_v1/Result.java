@@ -24,8 +24,8 @@ import de.fraunhofer.fit.train.model_v2.core.IResult;
 @XmlRootElement
 @Repository
 @Document(collection = "result")
-public class Result implements IResult{
-	
+public class Result implements IResult {
+
 	/**
 	 * @author Joao Bosco Jares MSc. (Software Engineer)
 	 * @see www.jbjares.com
@@ -36,39 +36,47 @@ public class Result implements IResult{
 	@SerializedName("patientCohortFor")
 	@Expose
 	private String patientCohortFor;
-	
+
 	@SerializedName("retrievedCohortSize")
 	@Expose
 	private String retrievedCohortSize;
-	
+
 	@SerializedName("cohortSizeAfterEliminatingPatientswithNOAgeData")
 	@Expose
 	private String cohortSizeAfterEliminatingPatientswithNOAgeData;
-	
+
 	@SerializedName("meanAgeCohortResult")
 	@Expose
 	private String meanAgeCohortResult;
-	
+
 	@Id
 	private ObjectId _id;
-	
 
-public ObjectId get_id() {
+	@SerializedName("internalPointer")
+	@Expose
+	private String internalPointer;
+
+	public String getInternalPointer() {
+		return internalPointer;
+	}
+
+	public void setInternalPointer(String internalPointer) {
+		this.internalPointer = internalPointer;
+	}
+
+	public ObjectId get_id() {
 		return _id;
 	}
 
 	public void set_id(ObjectId _id) {
 		this._id = _id;
 	}
-	
-    @SerializedName("internalId")
-    @Expose
+
+	@SerializedName("internalId")
+	@Expose
 	private String internalId;
-    
-    
-	
-	
-    public String getInternalId() {
+
+	public String getInternalId() {
 		return internalId;
 	}
 
@@ -77,10 +85,8 @@ public ObjectId get_id() {
 	}
 
 	@SerializedName("wagonId")
-    @Expose
+	@Expose
 	private String wagonId;
-    
-
 
 	public String getWagonId() {
 		return wagonId;
@@ -99,7 +105,6 @@ public ObjectId get_id() {
 		this.patientCohortFor = patientCohortFor;
 	}
 
-	
 	public String getRetrievedCohortSize() {
 		return retrievedCohortSize;
 	}
@@ -114,7 +119,8 @@ public ObjectId get_id() {
 	}
 
 	@XmlElement
-	public void setCohortSizeAfterEliminatingPatientswithNOAgeData(String cohortSizeAfterEliminatingPatientswithNOAgeData) {
+	public void setCohortSizeAfterEliminatingPatientswithNOAgeData(
+			String cohortSizeAfterEliminatingPatientswithNOAgeData) {
 		this.cohortSizeAfterEliminatingPatientswithNOAgeData = cohortSizeAfterEliminatingPatientswithNOAgeData;
 	}
 
@@ -126,9 +132,5 @@ public ObjectId get_id() {
 	public void setMeanAgeCohortResult(String meanAgeCohortResult) {
 		this.meanAgeCohortResult = meanAgeCohortResult;
 	}
-	
-	
-	
-	
 
 }

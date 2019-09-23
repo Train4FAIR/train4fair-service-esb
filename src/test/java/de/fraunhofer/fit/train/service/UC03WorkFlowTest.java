@@ -67,10 +67,10 @@ public class UC03WorkFlowTest {
 	@Test
 	public void nodeRedWorkFlowTest() throws ClientProtocolException, NoSuchAlgorithmException, IOException {
 		executeTrainJsFirstCall();
-		executeWagonJsSecondCall();
-		executeResourceJsThirdCall();
-		executeArtifactJsForthCall();
-		executeExecute_SaveDavJsFithCall();
+//		executeWagonJsSecondCall();
+//		executeResourceJsThirdCall();
+//		executeArtifactJsForthCall();
+//		executeExecute_SaveDavJsFithCall();
 	}
 	
 	
@@ -78,11 +78,11 @@ public class UC03WorkFlowTest {
 	public void executeTrainJsFirstCall()
 			throws ClientProtocolException, IOException, NoSuchAlgorithmException {
 
-		Train train = facade.findTrainById(INTERNAL_ID_TEST);
+		Train train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		if (train != null) {
 			facade.deleteTrainById(INTERNAL_ID_TEST);
 		}
-		train = facade.findTrainById(INTERNAL_ID_TEST);
+		train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNull(train);
 
 		String content = TrainUtil.readFileToStr(TRAINJS_FIRSTCALL_JSON_FILE_LOCATION);
@@ -100,7 +100,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		train = facade.findTrainById(INTERNAL_ID_TEST);
+		train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 	}
 	
@@ -127,7 +127,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		Train train = facade.findTrainById(INTERNAL_ID_TEST);
+		Train train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 		Assert.assertEquals(1,train.getWagons().length);
@@ -144,7 +144,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		train = facade.findTrainById(INTERNAL_ID_TEST);
+		train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 		Assert.assertEquals(2,train.getWagons().length);
@@ -161,7 +161,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		train = facade.findTrainById(INTERNAL_ID_TEST);
+		train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 		Assert.assertEquals(3,train.getWagons().length);
@@ -191,7 +191,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		Train train = facade.findTrainById(INTERNAL_ID_TEST);
+		Train train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 //		Assert.assertEquals(1,train.getWagons().length);
@@ -208,7 +208,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		train = facade.findTrainById(INTERNAL_ID_TEST);
+		train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 //		Assert.assertEquals(2,train.getWagons().length);
@@ -225,7 +225,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		train = facade.findTrainById(INTERNAL_ID_TEST);
+		train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 		Assert.assertEquals(3,train.getWagons().length);
@@ -250,7 +250,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		Train train = facade.findTrainById(INTERNAL_ID_TEST);
+		Train train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 		//Assert.assertEquals(1,train.getWagons().length);
@@ -267,7 +267,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		train = facade.findTrainById(INTERNAL_ID_TEST);
+		train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 		//Assert.assertEquals(2,train.getWagons().length);
@@ -284,7 +284,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		train = facade.findTrainById(INTERNAL_ID_TEST);
+		train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 		Assert.assertEquals(3,train.getWagons().length);
@@ -307,7 +307,7 @@ public class UC03WorkFlowTest {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		client.close();
 
-		Train train = facade.findTrainById(INTERNAL_ID_TEST);
+		Train train = facade.findTrainByInternalId(INTERNAL_ID_TEST);
 		Assert.assertNotNull(train);
 		
 	}

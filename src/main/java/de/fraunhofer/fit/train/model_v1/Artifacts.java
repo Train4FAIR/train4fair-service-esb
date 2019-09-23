@@ -56,10 +56,18 @@ public class Artifacts implements Serializable {
 	@Id
 	private ObjectId _id;
 
-	
-	
-	
-	
+	@SerializedName("internalPointer")
+	@Expose
+	private String internalPointer;
+
+	public String getInternalPointer() {
+		return internalPointer;
+	}
+
+	public void setInternalPointer(String internalPointer) {
+		this.internalPointer = internalPointer;
+	}
+
 	public String getExtension() {
 		return extension;
 	}

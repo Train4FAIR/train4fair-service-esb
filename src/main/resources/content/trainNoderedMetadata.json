@@ -1,0 +1,20 @@
+{
+   "id":"5d85a4deca90827e9e05fc6a",
+   "type":"Train",
+   "z":"400c1baf.3ec1a4",
+   "_closeCallbacks":[
+
+   ],
+   "name":"BMI Train",
+   "wires":[
+      [
+         "3253c6ae.d9410a"
+      ]
+   ],
+   "_wireCount":1,
+   "_wire":"3253c6ae.d9410a",
+   "_events":{
+
+   },
+   "_eventsCount":1
+}

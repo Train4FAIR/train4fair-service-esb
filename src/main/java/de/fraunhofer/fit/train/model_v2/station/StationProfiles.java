@@ -17,27 +17,22 @@ import com.google.gson.annotations.SerializedName;
 public class StationProfiles {
 	
 	
-	@SerializedName("stationprofile")
+	@SerializedName("stationProfile")
 	@Expose
 	private String[] stationProfile;
 	
 	
-	
-	public String[] getStationProfiles() {
+
+	public String[] getStationProfile() {
 		return stationProfile;
 	}
 
 	@XmlElement
-	public void setStationProfiles(String[] stationProfile) {
+	public void setStationProfile(String[] stationProfile) {
 		this.stationProfile = stationProfile;
 	}
-
 	
-	public static void main (String args[]) {
-		Gson gson = new Gson();
-		String result = gson.toJson(StationProfiles.class);
-		System.out.println(result);
-	}
+
 
 }
 
