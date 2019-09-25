@@ -3,6 +3,7 @@ package de.fraunhofer.fit.train.model_v2.nodered;
 import java.io.IOException;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import com.google.gson.Gson;
 
 import de.fraunhofer.fit.train.config.AppConfig;
 import de.fraunhofer.fit.train.facade.ServiceFacade;
+import de.fraunhofer.fit.train.model_v1.Train;
 import de.fraunhofer.fit.train.util.TrainUtil;
 
 @RunWith(SpringRunner.class)
@@ -46,7 +48,20 @@ public class MetadataParserTest {
 	private static final String ARTIFACTS_NODERED_METADATA = "/Users/jbjares/workspaces/TrainmodelHelper/train-model-service/src/main/resources/content/artifactsNoderedMetadata.json";
 	
 	
+
+	@Ignore
+	@Test
+	public void wrapperTrainObjectFlowTest() throws Exception {
+		facade.wrapperTheTrainObjects("5d8b31839141a42a7bd1b781");
+	}
 	
+	@Test
+	public void wrapperWagonObjectFlowTest() throws Exception {
+		Train train = facade.wrapperTheWagonObjects("5d8b33229141a42a7bd1b799");
+		System.out.println(train);
+	}
+	
+	@Ignore
 	@Test
 	public void parseTrainMetadataToPOJOTest() throws Exception {
 		facade.deleteAllNoderedMetadataTrain();
@@ -68,6 +83,8 @@ public class MetadataParserTest {
 		
 	}
 	
+	
+	@Ignore
 	@Test
 	public void parseWagonMetadataToPOJOTest() throws IOException {
 		facade.deleteAllNoderedMetadataWagon();
@@ -88,6 +105,8 @@ public class MetadataParserTest {
 		
 	}
 	
+	
+	@Ignore
 	@Test
 	public void parseResoucesMetadataToPOJOTest() throws IOException {
 		facade.deleteAllNoderedMetadataResources();
@@ -110,6 +129,8 @@ public class MetadataParserTest {
 
 	
 	//ARTIFACTS_NODERED_METADATA
+	
+	@Ignore
 	@Test
 	public void parseArtifactsMetadataToPOJOTest() throws IOException {
 		facade.deleteAllNoderedMetadataResources();

@@ -5,8 +5,6 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.stereotype.Repository;
 
@@ -18,13 +16,10 @@ import de.fraunhofer.fit.train.model_v1.oci.OCI;
 @XmlRootElement
 @Repository
 @Document(collection = "resources")
-public class Resources implements Serializable {
+public class Resources  extends TrainAbstract implements Serializable {
 
 	private static final long serialVersionUID = 5562880948241337153L;
 
-	@SerializedName("name")
-	@Expose
-	private String name;
 
 	@SerializedName("artifacts")
 	@Expose
@@ -34,44 +29,7 @@ public class Resources implements Serializable {
 	@Expose
 	private OCI oci;
 
-	@SerializedName("description")
-	@Expose
-	private String description;
 
-	@Id
-	private ObjectId _id;
-
-	@SerializedName("internalPointer")
-	@Expose
-	private String internalPointer;
-
-	public String getInternalPointer() {
-		return internalPointer;
-	}
-
-	public void setInternalPointer(String internalPointer) {
-		this.internalPointer = internalPointer;
-	}
-
-	public ObjectId get_id() {
-		return _id;
-	}
-
-	public void set_id(ObjectId _id) {
-		this._id = _id;
-	}
-
-	@SerializedName("internalId")
-	@Expose
-	private String internalId;
-
-	public String getInternalId() {
-		return internalId;
-	}
-
-	public void setInternalId(String internalId) {
-		this.internalId = internalId;
-	}
 
 	@SerializedName("wagonId")
 	@Expose
@@ -85,61 +43,7 @@ public class Resources implements Serializable {
 		this.wagonId = wagonId;
 	}
 
-	/**
-	 * "Occurrence: 1 Definition: All additional information that does not fit in
-	 * any of the other categories. May be used for technical information. Allowed
-	 * values, examples, other constraints: Free text. It is a best practice to
-	 * supply a description."
-	 * 
-	 * @author Joao Bosco Jares MSc. (Software Engineer)
-	 * @see www.jbjares.com
-	 * @see jbjares@gmail.com, joao.bosco.jares.alves.chaves@fit.fraunhofer.de
-	 *
-	 */
-	public String getDescription() {
-		return description;
-	}
 
-	/**
-	 * "Occurrence: 1 Definition: All additional information that does not fit in
-	 * any of the other categories. May be used for technical information. Allowed
-	 * values, examples, other constraints: Free text. It is a best practice to
-	 * supply a description."
-	 * 
-	 * @author Joao Bosco Jares MSc. (Software Engineer)
-	 * @see www.jbjares.com
-	 * @see jbjares@gmail.com, joao.bosco.jares.alves.chaves@fit.fraunhofer.de
-	 *
-	 */
-	@XmlElement
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	/**
-	 * "Occurrence: 1 This field aims to hold an optional name for the wagon
-	 * instance."
-	 * 
-	 * @author Joao Bosco Jares MSc. (Software Engineer)
-	 * @see www.jbjares.com
-	 * @see jbjares@gmail.com, joao.bosco.jares.alves.chaves@fit.fraunhofer.de
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * "Occurrence: 1 This field aims to hold an optional name for the wagon
-	 * instance."
-	 * 
-	 * @author Joao Bosco Jares MSc. (Software Engineer)
-	 * @see www.jbjares.com
-	 * @see jbjares@gmail.com, joao.bosco.jares.alves.chaves@fit.fraunhofer.de
-	 */
-	@XmlElement
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	/**
 	 * "Note: Any OPTIONAL field MAY also be set to null, which is equivalent to

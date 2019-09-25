@@ -126,7 +126,7 @@ public class InternalServiceInterfaces {
     Wagons saveWagon(@RequestBody String input,  @PathVariable String internalId)
             throws NoSuchAlgorithmException, IOException {
     	
-    	//WagonsMetadataNoderedNODE[] wagonNode = facade.findWagonsArrByInternalId(internalId);
+
         if(input==null || "".equals(input)) {
         	throw new RuntimeException("failed to save the new Train. Probrably The Train Objects are Null.");
         }
@@ -135,7 +135,20 @@ public class InternalServiceInterfaces {
 		Wagons wagon = gson.fromJson(input, Wagons.class);
 		wagon.setInternalId(internalId);
 		wagon.setTrainId(internalId);
+		System.out.println(wagon);
+		
+		if(wagon.getInternalPointer()==null || "".equals(wagon.getInternalPointer())) {
+			System.out.println("!!!====>>> "+wagon.getInternalId());
+			return wagon;
+		}
+		
+
         
+    	WagonsMetadataNoderedNODE[] wagonNode = facade.findWagonNodeByInternalId(internalId);
+		if(wagonNode==null) {
+			return wagon;
+		}
+		
         Wagons wagons = facade.saveWagon(wagon);
         return wagons;
     }
@@ -156,6 +169,13 @@ public class InternalServiceInterfaces {
 		String internalPointer = trainUtil.convertTwoDimensionsArrIntoStr(wagonNode.getWires(),internalId);
 		wagonNode.setInternalPointer(internalPointer);
 		wagonNode.setInternalVersion(internalVersion);
+		
+		//TODO create an error message framework
+		if(wagonNode.getParentWireId()==null || wagonNode.getParentWireId().length==0) {
+			System.out.println("!!!====>>> "+wagonNode.getParentWireId());
+			return;
+		}
+		
 		wagonNode = facade.saveNoderedMetadataWagon(wagonNode);
 		System.out.println("wagonNode => "+wagonNode);
         
@@ -215,22 +235,22 @@ public class InternalServiceInterfaces {
         }
 		Gson gson = new Gson();
 		Artifacts artifactInput = gson.fromJson(input, Artifacts.class);
-        Artifacts[] artifactsArr = facade.findArtifactsByInternalId(internalId);
+        //Artifacts[] artifactsArr = facade.findArtifactsByInternalId(internalId);
         
         
         if(artifactInput==null) {
         	return null;
         }
         
-        for(int i=0;i<artifactsArr.length;i++) {
-        	Artifacts artifact = artifactsArr[i];
-        	if(artifact.getFilename()!=null && !"".equals(artifact.getFilename())&&
-        			artifact.getFilename().equals(artifactInput)&&
-        			artifact.getFiledata()!=null && !"".equals(artifact.getFiledata())&&
-        					artifact.getFiledata().equals(artifactInput.getFiledata())){
-        		return null;
-        	}
-        }
+//        for(int i=0;i<artifactsArr.length;i++) {
+//        	Artifacts artifact = artifactsArr[i];
+//        	if(artifact.getFilename()!=null && !"".equals(artifact.getFilename())&&
+//        			artifact.getFilename().equals(artifactInput)&&
+//        			artifact.getFiledata()!=null && !"".equals(artifact.getFiledata())&&
+//        					artifact.getFiledata().equals(artifactInput.getFiledata())){
+//        		return null;
+//        	}
+//        }
 
         
 
@@ -274,6 +294,8 @@ public class InternalServiceInterfaces {
         }
         
         Train train = facade.wrapperTheTrainObjects(internalId);
+        train = facade.wrapperTheWagonObjects(internalId);
+        train = facade.wrapperTheResourcesObjects(internalId);
         train = facade.saveUpdateTrain(train);
 
         return train;

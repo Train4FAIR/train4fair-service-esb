@@ -60,6 +60,22 @@ public class BasicMetadataNoderedNODE {
 	@SerializedName("parentWireId")
 	@Expose
 	private String[] parentWireId;
+	
+	@SerializedName("correlationObjectId")
+	@Expose
+	private String correlationObjectId;
+	
+	
+
+
+
+	public String getCorrelationObjectId() {
+		return correlationObjectId;
+	}
+
+	public void setCorrelationObjectId(String correlationObjectId) {
+		this.correlationObjectId = correlationObjectId;
+	}
 
 	public ObjectId get_id() {
 		return _id;

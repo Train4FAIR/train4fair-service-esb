@@ -72,17 +72,6 @@ public class Result implements IResult {
 		this._id = _id;
 	}
 
-	@SerializedName("internalId")
-	@Expose
-	private String internalId;
-
-	public String getInternalId() {
-		return internalId;
-	}
-
-	public void setInternalId(String internalId) {
-		this.internalId = internalId;
-	}
 
 	@SerializedName("wagonId")
 	@Expose

@@ -16,6 +16,9 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -252,4 +255,34 @@ public class TrainUtil {
 		return result;
 	}
 
+	public static List<String> convertWiresInternalIdStrToListStr(String wiresInternalId) {
+		wiresInternalId = wiresInternalId.replace("\"", "");
+		String[] wiresInternalIdStrArr = wiresInternalId.split(",");
+		List<String> result = new ArrayList<String>(wiresInternalIdStrArr.length);
+		result.addAll(Arrays.asList(wiresInternalIdStrArr));
+
+		return result;
+	}
+
+
+	public static String convertWiresArrToStr(String[] parentWireId) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i<parentWireId.length;i++) {
+			sb.append(parentWireId[i]);
+			sb.append("%");
+		}
+		
+        String result = sb.toString();
+        if(result.endsWith("%")) {
+        	result = result.substring(0, result.length()-1);
+        }
+        
+		return result;
+		
+	}
+	
+	public static void main(String[] args) {
+		TrainUtil trainUtil = new TrainUtil();
+		System.out.println(trainUtil.convertWiresArrToStr(new String[] {"4bd6287f.d51d88","60b2721.6014e8c"}));
+	}
 }

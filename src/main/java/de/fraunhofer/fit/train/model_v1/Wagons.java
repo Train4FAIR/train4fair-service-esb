@@ -5,8 +5,6 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.stereotype.Repository;
 
@@ -19,13 +17,10 @@ import de.fraunhofer.fit.train.model_v2.station.StationProfiles;
 @XmlRootElement
 @Repository
 @Document(collection = "wagons")
-public class Wagons implements Serializable {
+public class Wagons  extends TrainAbstract implements Serializable {
 
 	private static final long serialVersionUID = -677848535075814550L;
 
-	@SerializedName("name")
-	@Expose
-	private String name;
 
 	@SerializedName("resources")
 	@Expose
@@ -35,34 +30,16 @@ public class Wagons implements Serializable {
 	@Expose
 	private StationProfiles stationProfiles;
 
-	@SerializedName("description")
-	@Expose
-	private String description;
 
+	
+	/**
+	 * Result object
+	 */
+	//TODO refactoring to be flexible for all use cases
 	@SerializedName("result")
 	@Expose
 	private Result result;
 
-	@Id
-	private ObjectId _id;
-	
-	@SerializedName("internalPointer")
-	@Expose
-	private String internalPointer;
-	
-	
-
-	public String getInternalPointer() {
-		return internalPointer;
-	}
-
-	public void setInternalPointer(String internalPointer) {
-		this.internalPointer = internalPointer;
-	}
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
 
 	/**
 	 * UC03 - Init
@@ -159,25 +136,6 @@ public class Wagons implements Serializable {
 	 * UC03 - End
 	 */
 
-	public ObjectId get_id() {
-		return _id;
-	}
-
-	public void set_id(ObjectId _id) {
-		this._id = _id;
-	}
-
-	@SerializedName("internalId")
-	@Expose
-	private String internalId;
-
-	public String getInternalId() {
-		return internalId;
-	}
-
-	public void setInternalId(String internalId) {
-		this.internalId = internalId;
-	}
 
 	@SerializedName("trainId")
 	@Expose
@@ -219,36 +177,6 @@ public class Wagons implements Serializable {
 		this.result = result;
 	}
 
-	/**
-	 * "Occurrence: 1 Definition: All additional information that does not fit in
-	 * any of the other categories. May be used for technical information. Allowed
-	 * values, examples, other constraints: Free text. It is a best practice to
-	 * supply a description."
-	 * 
-	 * @author Joao Bosco Jares MSc. (Software Engineer)
-	 * @see www.jbjares.com
-	 * @see jbjares@gmail.com, joao.bosco.jares.alves.chaves@fit.fraunhofer.de
-	 *
-	 */
-	public String getDescription() {
-		return description;
-	}
-
-	/**
-	 * "Occurrence: 1 Definition: All additional information that does not fit in
-	 * any of the other categories. May be used for technical information. Allowed
-	 * values, examples, other constraints: Free text. It is a best practice to
-	 * supply a description."
-	 * 
-	 * @author Joao Bosco Jares MSc. (Software Engineer)
-	 * @see www.jbjares.com
-	 * @see jbjares@gmail.com, joao.bosco.jares.alves.chaves@fit.fraunhofer.de
-	 *
-	 */
-	@XmlElement
-	public void setDescription(String description) {
-		this.description = description;
-	}
 
 	/**
 	 * "Occurrence: 1 - n The stationProfiles aims to hold the logic domain name
@@ -277,30 +205,6 @@ public class Wagons implements Serializable {
 		this.stationProfiles = stationProfiles;
 	}
 
-	/**
-	 * "Occurrence: 1 This field aims to hold an optional name for the wagon
-	 * instance."
-	 * 
-	 * @author Joao Bosco Jares MSc. (Software Engineer)
-	 * @see www.jbjares.com
-	 * @see jbjares@gmail.com, joao.bosco.jares.alves.chaves@fit.fraunhofer.de
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * "Occurrence: 1 This field aims to hold an optional name for the wagon
-	 * instance."
-	 * 
-	 * @author Joao Bosco Jares MSc. (Software Engineer)
-	 * @see www.jbjares.com
-	 * @see jbjares@gmail.com, joao.bosco.jares.alves.chaves@fit.fraunhofer.de
-	 */
-	@XmlElement
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	/**
 	 * "Occurrence: 1 An array of resource objects."
