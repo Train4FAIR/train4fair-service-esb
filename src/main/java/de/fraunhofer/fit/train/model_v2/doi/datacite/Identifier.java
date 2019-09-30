@@ -36,6 +36,32 @@ public class Identifier {
 	@Expose
 	private String  suffix;
 
+	@SerializedName("resourcesUrl")
+	@Expose
+	private String  resourcesUrl;
+	
+	@SerializedName("metadataUrl")
+	@Expose
+	private String  metadataUrl;
+	
+	
+
+	public String getResourcesUrl() {
+		return resourcesUrl;
+	}
+
+	public void setResourcesUrl(String resourcesUrl) {
+		this.resourcesUrl = resourcesUrl;
+	}
+
+	public String getMetadataUrl() {
+		return metadataUrl;
+	}
+
+	public void setMetadataUrl(String metadataUrl) {
+		this.metadataUrl = metadataUrl;
+	}
+
 	public String getIdentifierType() {
 		return identifierType;
 	}

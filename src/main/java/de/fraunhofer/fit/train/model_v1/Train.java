@@ -103,8 +103,23 @@ public class Train extends TrainAbstract implements  Serializable {
 	@Expose
 	private String aggregationResult;
 	
-
+	@SerializedName("restApiDocUrl")
+	@Expose
+	private String restApiDocUrl;
 	
+	
+	
+	
+	public String getRestApiDocUrl() {
+		return restApiDocUrl;
+	}
+
+
+	public void setRestApiDocUrl(String restApiDocUrl) {
+		this.restApiDocUrl = restApiDocUrl;
+	}
+
+
 	public Boolean getIsAccessConstraintsOk() {
 		return isAccessConstraintsOk;
 	}

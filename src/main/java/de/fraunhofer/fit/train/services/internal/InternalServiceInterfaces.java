@@ -329,27 +329,9 @@ public class InternalServiceInterfaces {
         	  continue;
           }
           facade.saveArtifact(artifacts);
+          facade.sendLandPageToDav(internalId);
         }
         return Boolean.TRUE;
-        
-    }
-    //==
-    
-    // TODO: [Important] Do the documentation =======================
-    @PostMapping(value = "/train/landpage/{internalId}/{internalVersion}/", produces = MediaType.APPLICATION_JSON_VALUE)
-    //!!!+
-    Train executeConfigAndAddLandpageToWebDav(@RequestBody String input, @PathVariable String internalId, @PathVariable String internalVersion)
-            throws NoSuchAlgorithmException, IOException {
-    	
-        if(input==null || "".equals(input)) {
-        	throw new RuntimeException("failed to save the new Resource. Probrably the Resource Objects are Null.");
-        }
-        
-        Train trainn = facade.findTrainByInternalId(internalId);
-        
-        
-
-        return trainn;
         
     }
     //==

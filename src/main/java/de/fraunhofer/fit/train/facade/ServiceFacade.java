@@ -6,14 +6,12 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,7 +87,6 @@ import de.fraunhofer.fit.train.util.TrainUtil;
 @Service
 public class ServiceFacade {
 
-	private static final String WELCOME_HTML = "welcome.html";
 
 	@Autowired
 	private TrainServiceLocator trainServiceLocator;
@@ -253,97 +250,10 @@ public class ServiceFacade {
 		return resourceRepository.save(resources);
 	}
 
-	public Train addFilesToWebDav(Train train) throws Exception {
-
-//		for(int i=0;i<train.getWagon().length;i++) {
-//			
-//			Wagon wagon = train.getWagon()[i];
-//			for(int j=0;j<wagon.getResources().length;j++) {
-//				
-//				Resource resource = wagon.getResources()[j];
-//				
-//				for(int k=0;k<resource.getArtifact().length;k++) {
-//					
-//					Artifact artifact = resource.getArtifact()[k];
-//					String webdavURL = doUpload(artifact,train);
-//					artifact.setFileUrl(webdavURL);
-//					artifact.setFiledata(null);
-//				}
-//				
-//			}
-//			
-//		}
-		return train;
-	}
-
-	// private String doUpload(Artifacts[] artifact,Train train) throws Exception {
-
-	// Sardine sardine = SardineFactory.begin("root", "root");
-	// String filePath =
-	// "/Users/jbjares/workspaces/TrainDORepository/tmp/"+train.getInternalId()+"/"+artifact.getFilename();
-	// String webdavdir =
-	// "https://frauhofer.fit.trainmodel-webdav/"+train.getInternalId()+"/";
-//		sardine.createDirectory(webdavdir);
-//		FileUtils.writeStringToFile(new File(filePath),artifact.getFiledata());
-//		byte[] data = FileUtils.readFileToByteArray(new File(filePath));
-//		sardine.put(webdavdir+artifact.getFilename(), data);
-//
-//		//== set checksum File
-//		artifact.setChecksum(TrainUtil.getChecksum(new File(filePath)));
-//		String  filePathCheckSum = "/Users/jbjares/workspaces/TrainDORepository/tmp/"+train.getInternalId()+"/"+artifact.getFilename()+".checksum";
-//		FileUtils.writeStringToFile(new File(filePathCheckSum),artifact.getChecksum());
-//		byte[] dataChecksum = FileUtils.readFileToByteArray(new File(filePathCheckSum));
-//		sardine.put(webdavdir+"/"+artifact.getFilename()+".checksum", dataChecksum);
-//		
-//		//clean
-//		File tmpFolder = new File(filePathCheckSum);
-//		TrainUtil.deleteDirectoryRecursionJava6(tmpFolder);
-
-	// return webdavdir+"/"+artifact.getName().replace(".", "_");
-
-	// }
-
-	public Artifacts getlandpage(String internalId) throws Exception {
-		Train train = findTrainByInternalId(internalId);
-		Artifacts artifact = null;
-
-		Iterable<Artifacts> artifactList = artifactRepository.findAll();
-		Iterator<Artifacts> it = artifactList.iterator();
-		while (it.hasNext()) {
-			artifact = it.next();
-
-			if (artifact.getInternalId().equals(internalId) && artifact.getName().equals(WELCOME_HTML)) {
-				continue;
-			} else {
-
-			}
-
-			artifact = new Artifacts();
-			String landpage = customlandpage(train, internalId);
-			artifact.setDescription("landpage");
-			artifact.setFilename(WELCOME_HTML);
-			artifact.setFormat(StandardCharsets.UTF_8.toString());
-			// artifact.setInternalId(internalId);
-			artifact.setName(WELCOME_HTML);
-			artifact.setFiledata(landpage);
-			Artifacts artifacts = sendToDav(artifact, internalId);
-
-//			RelatedIdentifier relatedIdentifier = new RelatedIdentifier();
-//			relatedIdentifier.setContent(artifacts.getFileUrl());
-//			relatedIdentifier.setRelatedIdentifierType("URL");
-//			if(train.getDatacite().getRelatedIdentifiers()!=null && train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier()!=null) {
-//				train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier()
-//				[train.getDatacite().getRelatedIdentifiers().getRelatedIdentifier().length+1] = relatedIdentifier;
-//			}
-		}
-
-		return artifact;
-
-	}
-
 	@SuppressWarnings({ "finally", "deprecation" })
-	public Artifacts sendToDav(Artifacts artifacts, String trainId) throws IOException {
+	public void sendLandPageToDav(String internalId) throws IOException {
 
+		Train train = findTrainByInternalId(internalId);
 		String name = env.getProperty("env.dav.name");
 		String type = env.getProperty("env.dav.type");
 		String token = env.getProperty("env.dav.token");
@@ -363,8 +273,51 @@ public class ServiceFacade {
 			String port = env.getString("port");
 
 			String webdavdir = "http://" + host + ":" + port;
-			String url = webdavdir + "/" + trainId;
-			if (trainId.equals(artifacts.getInternalId())) {
+			String url = webdavdir + "/" + train.getInternalId() + "/";
+
+			System.out.println("sardine landpageurl: " + url);
+			Boolean existURL = sardine.exists(url);
+			if (!existURL) {
+				sardine.createDirectory(url);
+			}
+
+			String filedavUrl = url + "index.html";
+			sardine.put(filedavUrl, customlandpage(train).getBytes());
+
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} finally {
+			sardine.shutdown();
+		}
+
+	}
+
+	@SuppressWarnings({ "finally", "deprecation" })
+	public Artifacts sendToDav(Artifacts artifacts, String internalId) throws IOException {
+
+		Train train = findTrainByInternalId(internalId);
+		String name = env.getProperty("env.dav.name");
+		String type = env.getProperty("env.dav.type");
+		String token = env.getProperty("env.dav.token");
+
+		JSONObject env;
+		env = trainServiceLocator.locateEnvironment(name, type, token);
+
+		String username = env.getString("user");
+		String password = env.getString("pass");
+		Sardine sardine = SardineFactory.begin(username, password);
+		try {
+			String filePath = "/tmp/webdav/";
+			if (!new File(filePath).exists()) {
+				new File(filePath).createNewFile();
+			}
+			String host = env.getString("host");
+			String port = env.getString("port");
+
+			String webdavdir = "http://" + host + ":" + port;
+			String url = webdavdir + "/" + train.getInternalId() + "/";
+
+			if (train.getInternalId().equals(artifacts.getInternalId())) {
 				System.out.println("sardine url: " + url);
 				Boolean existURL = sardine.exists(url);
 				if (!existURL) {
@@ -404,47 +357,6 @@ public class ServiceFacade {
 
 	}
 
-//	@SuppressWarnings({ "finally", "deprecation" })
-//	public Artifacts sendToDav(Artifacts artifacts, String trainId) throws IOException {
-//
-//		String name = env.getProperty("env.dav.name");
-//		String type = env.getProperty("env.dav.type");
-//		String token = env.getProperty("env.dav.token");
-//
-//		JSONObject env;
-//		env = trainServiceLocator.locateEnvironment(name, type, token);
-//		Sardine sardine = SardineFactory.begin(env.getString("user"), env.getString("pass"));
-//		try {
-//			String filePath = "/tmp/webdav/";
-//			if (!new File(filePath).exists()) {
-//				new File(filePath).createNewFile();
-//			}
-//			String webdavdir = "http://"+env.getString("host")+":"+env.getString("port");
-//			String url = webdavdir + "/" + trainId;
-//			if (trainId.equals(artifacts.getInternalId())) {
-//				Boolean existURL = sardine.exists(url);
-//				if (!existURL) {
-//					sardine.createDirectory(url);
-//				}
-//			}
-//
-//			FileUtils.writeStringToFile(new File(filePath), artifacts.getFiledata());
-//			byte[] data = FileUtils.readFileToByteArray(new File(filePath));
-//			byte[] decoded = Base64.getDecoder().decode(data);
-//			InputStream stream = new ByteArrayInputStream(decoded);
-//
-//			sardine.put(url + "/" + artifacts.getName().trim(), stream);
-//
-//			artifacts.setFiledata(null);
-//			artifacts.setFileUrl(url);
-//		} catch (Exception e) {
-//			throw new RuntimeException(e.getMessage(), e);
-//		} finally {
-//			sardine.shutdown();
-//			return artifacts;
-//		}
-//
-//	}
 
 	public Wagons findWagonByInternalId(String internalId) {
 		if (wagonRepository.findById(internalId) == null) {
@@ -500,12 +412,6 @@ public class ServiceFacade {
 
 				}
 
-				System.out.println("============================================");
-				System.out.println("internalId: " + internalId);
-				System.out.println("testInternalId: " + testInternalId);
-				System.out.println("testCollelationObjId: " + testCollelationObjId);
-				System.out.println("============================================\n\n");
-
 				if (testCollelationObjId && testInternalId) {
 					return wagon;
 				}
@@ -551,22 +457,7 @@ public class ServiceFacade {
 		return null;
 	}
 
-//	public WagonsMetadataNoderedNODE findWagonByInternalId(String internalId) {
-//		try {
-//			Iterable<WagonsMetadataNoderedNODE> list = wagonRepositoryNode.findAll();
-//			for(WagonsMetadataNoderedNODE node: list) {
-//				if(node.getInternalId()!=null && !"".equals(node.getInternalId())&&node.getInternalId().equals(internalId)) {
-//					return node;
-//				}
-//			}
-//
-//		}catch(java.util.NoSuchElementException e) {
-//			return null;
-//		}
-//
-//		return null;
-//
-//	}
+
 
 	public Resources findResourceById(String id) {
 		return resourceRepository.findById(id).get();
@@ -663,23 +554,7 @@ public class ServiceFacade {
 
 	}
 
-	// TODO Implement it!
-//	private Train addInternalIDs(Train train) {
-//		String trainID = train.get_id().get().toString();
-//		train.setInternalPointer(trainID);
-//		train.setInternalId(trainID);
-//		
-//		for(TrainArtifact artifact: resource.getFiles()) {
-//			String artifactId = artifact.get_id().get().toString();
-//			artifactId = resourceInternalID+artifactId;
-//			artifact.setJsonPointer(artifactId);
-//			artifact.setInternalId(artifactId);
-//			artifact.setDavUrl("http://localhost:9999/"+artifactId+"/"+artifact.getFilename());
-//			artifactRepository.save(artifact);
-//		}
-//
-//		return train;
-//	}
+
 
 	public Result getResult(Train train) {
 		Result result = new Result();
@@ -813,74 +688,6 @@ public class ServiceFacade {
 
 	}
 
-	public String getFlow() throws Exception {
-
-		String flow = "[\n" + "    {\n" + "        \"id\": \"e3be62f1.a8031\",\n" + "        \"type\": \"tab\",\n"
-				+ "        \"label\": \"Flow 1\",\n" + "        \"disabled\": false,\n" + "        \"info\": \"\"\n"
-				+ "    },\n" + "    {\n" + "        \"id\": \"63bd3b38.7d5084\",\n" + "        \"type\": \"Train\",\n"
-				+ "        \"z\": \"e3be62f1.a8031\",\n" + "        \"name\": \"BMI TRAIN\",\n"
-				+ "        \"description\": \"BMI TRAI DESCRIPTION\",\n" + "        \"sourceRepository\": \"\",\n"
-				+ "        \"userToken\": \"\",\n" + "        \"internalId\": \"\",\n"
-				+ "        \"internalVersion\": \"\",\n" + "        \"internalPointer\": \"\",\n"
-				+ "        \"language\": \"\",\n" + "        \"version\": \"\",\n"
-				+ "        \"publicationYear\": \"\",\n" + "        \"publisher\": \"\",\n"
-				+ "        \"identifierType\": \"\",\n" + "        \"identifierContent\": \"\",\n"
-				+ "        \"creatorAffiliation\": \"\",\n" + "        \"creatorGivenName\": \"\",\n"
-				+ "        \"creatorFamilyName\": \"\",\n" + "        \"nameType\": \"\",\n"
-				+ "        \"creatorContent\": \"\",\n" + "        \"creatorNameIdentifierScheme\": \"\",\n"
-				+ "        \"creatorSchemeURI\": \"\",\n" + "        \"nameIdentifierContent\": \"\",\n"
-				+ "        \"subjectSchemeURI\": \"\",\n" + "        \"subjectContent\": \"\",\n"
-				+ "        \"subjectScheme\": \"\",\n" + "        \"dateType\": \"\",\n"
-				+ "        \"dateInformation\": \"\",\n" + "        \"dateContent\": \"\",\n"
-				+ "        \"format\": \"\",\n" + "        \"rightsURI\": \"\",\n"
-				+ "        \"rightsContent\": \"\",\n" + "        \"titleContent\": \"\",\n"
-				+ "        \"titleType\": \"\",\n" + "        \"descriptionType\": \"\",\n"
-				+ "        \"descriptionContent\": \"\",\n" + "        \"contributorAffiliation\": \"\",\n"
-				+ "        \"contributorGivenName\": \"\",\n" + "        \"contributorFamilyName\": \"\",\n"
-				+ "        \"contributorType\": \"\",\n" + "        \"contributorName\": \"\",\n"
-				+ "        \"contributorNameIdentifierScheme\": \"\",\n" + "        \"contributorSchemeURI\": \"\",\n"
-				+ "        \"contributorContent\": \"\",\n" + "        \"funderName\": \"\",\n"
-				+ "        \"awardNumber\": \"\",\n" + "        \"awardTitle\": \"\",\n"
-				+ "        \"funderIdentifierType\": \"\",\n" + "        \"fundingReferenceContent\": \"\",\n"
-				+ "        \"resourceTypeGeneral\": \"\",\n" + "        \"resourceTypeContent\": \"\",\n"
-				+ "        \"x\": 90,\n" + "        \"y\": 120,\n" + "        \"wires\": [\n" + "            [\n"
-				+ "                \"d609c877.f68a98\"\n" + "            ]\n" + "        ]\n" + "    },\n" + "    {\n"
-				+ "        \"id\": \"ce0e9515.cda1f8\",\n" + "        \"type\": \"debug\",\n"
-				+ "        \"z\": \"e3be62f1.a8031\",\n" + "        \"name\": \"\",\n" + "        \"active\": true,\n"
-				+ "        \"tosidebar\": true,\n" + "        \"console\": true,\n" + "        \"tostatus\": false,\n"
-				+ "        \"complete\": \"message\",\n" + "        \"targetType\": \"msg\",\n"
-				+ "        \"x\": 900,\n" + "        \"y\": 200,\n" + "        \"wires\": []\n" + "    },\n" + "    {\n"
-				+ "        \"id\": \"d609c877.f68a98\",\n" + "        \"type\": \"Wagon\",\n"
-				+ "        \"z\": \"e3be62f1.a8031\",\n" + "        \"name\": \"Test Wagon\",\n"
-				+ "        \"description\": \"Wagon Description\",\n" + "        \"stationProfile1\": \"Obesity\",\n"
-				+ "        \"stationProfile2\": \"Diabetes\",\n" + "        \"stationProfile3\": \"Cancer\",\n"
-				+ "        \"x\": 190,\n" + "        \"y\": 60,\n" + "        \"wires\": [\n" + "            [\n"
-				+ "                \"3c6001c4.83abbe\"\n" + "            ]\n" + "        ]\n" + "    },\n" + "    {\n"
-				+ "        \"id\": \"3c6001c4.83abbe\",\n" + "        \"type\": \"Resource\",\n"
-				+ "        \"z\": \"e3be62f1.a8031\",\n" + "        \"name\": \"\",\n"
-				+ "        \"description\": \"\",\n" + "        \"created\": \"\",\n" + "        \"author\": \"\",\n"
-				+ "        \"architecture\": \"PPC64LE\",\n" + "        \"os\": \"DRAGONFLY\",\n"
-				+ "        \"user\": \"\",\n" + "        \"port\": \"\",\n" + "        \"protocol\": \"\",\n"
-				+ "        \"env\": \"\",\n" + "        \"entrypoint\": \"2c43508e-4ac4-4562-a13f-5e1549818761\",\n"
-				+ "        \"cmd\": \"\",\n" + "        \"volumes\": \"\",\n" + "        \"x\": 180,\n"
-				+ "        \"y\": 200,\n" + "        \"wires\": [\n" + "            [\n"
-				+ "                \"255ba140.b14b7e\"\n" + "            ]\n" + "        ]\n" + "    },\n" + "    {\n"
-				+ "        \"id\": \"255ba140.b14b7e\",\n" + "        \"type\": \"Artifact\",\n"
-				+ "        \"z\": \"e3be62f1.a8031\",\n" + "        \"name\": \"build.sh\",\n"
-				+ "        \"filename\": \"\",\n"
-				+ "        \"filedata\": \"data:text/x-sh;base64,IyEvYmluL2Jhc2gKZG9ja2VyIHJtaSBqYmphcmVzL3BodG9uZmhpcgpkb2NrZXIgYnVpbGQgLXQgamJqYXJlcy9waHRvbmZoaXIgLi8KCmRvY2tlciBwdXNoIGpiamFyZXMvcGh0b25maGlyCg==\",\n"
-				+ "        \"format\": \"utf8\",\n" + "        \"x\": 400,\n" + "        \"y\": 80,\n"
-				+ "        \"wires\": [\n" + "            [\n" + "                \"11623aaf.220db5\"\n"
-				+ "            ]\n" + "        ]\n" + "    },\n" + "    {\n" + "        \"id\": \"11623aaf.220db5\",\n"
-				+ "        \"type\": \"Dispatcher\",\n" + "        \"z\": \"e3be62f1.a8031\",\n"
-				+ "        \"dispatchername\": \"\",\n" + "        \"dispatcherdescription\": \"\",\n"
-				+ "        \"dispatcherinternalid\": \"\",\n" + "        \"dispatcherinternalversion\": \"\",\n"
-				+ "        \"dispatcherjsonpointer\": \"\",\n" + "        \"x\": 630,\n" + "        \"y\": 180,\n"
-				+ "        \"wires\": [\n" + "            [\n" + "                \"ce0e9515.cda1f8\"\n"
-				+ "            ]\n" + "        ]\n" + "    }\n" + "]";
-
-		return flow;
-	}
 
 	// TODO Do it.
 	public String getDOI() {
@@ -966,12 +773,7 @@ public class ServiceFacade {
 		return trainRepository.save(train);
 	}
 
-//	public Wagons saveWagon(String input) {
-//		Gson gson = new Gson();
-//		Wagons wagon = gson.fromJson(input, Wagons.class);
-//		System.out.println(wagon);
-//		return wagonRepository.save(wagon);
-//	}
+
 
 	public Resources saveResources(Resources resources) {
 		return resourceRepository.save(resources);
@@ -1110,34 +912,37 @@ public class ServiceFacade {
 		return resourceRepository.saveAll(Arrays.asList(resources));
 	}
 
-//	public Iterable<Wagons> saveWagonsAll(Wagons[] wagons) {
-//		return wagonRepository.saveAll(Arrays.asList(wagons));
-//	}
 
-	private String getTemplate() {
-		String result = "<!-- https://support.datacite.org/docs/how-do-i-expose-my-datasets-to-google-dataset-search -->\n"
-				+ "<javascript>\n" + "$(document).ready(function() {\n"
-				+ "  var identifier = \"https://doi.org/||doi_var||\"; //for example 10.5284/1015681\n"
-				+ "  if (identifier === undefined) {\n" + "    return;\n" + "  }\n"
-				+ "  var doi = new URL(identifier);\n" + "  var url = \"https://data.datacite.org\";\n"
-				+ "  url += '/application/vnd.schemaorg.ld+json/' + doi.pathname;\n" + "\n" + "  $.ajax({\n"
-				+ "    url: url,\n" + "    dataType: 'text', // don't convert JSON to Javascript object\n"
-				+ "    success: function(data) {\n" + "      $('<script>')\n"
-				+ "         .attr('type', 'application/ld+json')\n" + "         .text(data)\n"
-				+ "         .appendTo('head');\n" + "    },\n" + "    error: function (error) {\n"
-				+ "      console.log(error.responseJSON);\n" + "    }\n" + "  });\n" + "});\n" + "</javascript>\n"
-				+ "\n" + "<!doctype html>\n" + "<html>\n" + "  <head>\n"
-				+ "    <title>Welcome, this is the land page of the Train experiment named as: ||experimentname_var||</title>\n"
-				+ "  </head>\n" + "  <body>\n"
-				+ "    <p>This page was auto generated by the Train Platform Project to give you a brief introduction about the ||experimentname_var|| experiment\n"
-				+ "     as well as to allow the you access to the ||experimentname_var|| experiment in run time through the Train Modelling Tool. \n"
-				+ "     where you can test this project in a runtime environment as well you can create your own experiments after to obtain the properly grants.\n"
-				+ "     <br/>\n" + "     <strong>||experimentname_var||</strong> \n"
-				+ "     <p>The ||experimentname_var|| project aims to:\n" + "     ||projectdescription_var||</p>\n"
-				+ "     <br/>\n"
-				+ "     If you are interested to in this experiment or in the platform, please <a href = \"mailto: joao.bosco.jares.alves.chaves@fit.fraunhofer.de\">e-mail us</a>.\n"
-				+ "    \n" + "  </body>\n" + "</html>";
-
+	private String getTemplate() throws IOException {
+		
+		//String result = TrainUtil.readFileToStr("/Users/jbjares/workspaces/TrainmodelHelper/train-microservices-esb/src/main/resources/content/lanpageAsTemplate.html");
+		String result = "<!doctype html>\n" + 
+				"<html>\n" + 
+				"  <head>\n" + 
+				"    <title>Welcome to the PHT Project.</title>\n" + 
+				"  </head>\n" + 
+				"  <body>\n" + 
+				"    <p>This page was auto generated by the Train Platform Project to give you a brief introduction about the project as well to \n" + 
+				"    make easy to find information and resources related to each new Train experiment.\n" + 
+				"    <p>Please, find below the information regarding the experiment.</p>\n" + 
+				"    \n" + 
+				"    <p>Experiment name: ||experimentname_var||</p>\n" + 
+				"    <p>Experiment Description: ||experimentdescription_var||</p>\n" + 
+				"    <p>Experiment DOIdentifier:  <a href=\"||experimentidentifier_var||\">||experimentidentifier_var||</a></p>\n" + 
+				"    <p>Datacite Metadata:  <a href=\"||experimentdataciteendpoint_var||\">||experimentdataciteendpoint_var||</a></p>\n" + 
+				"    <p>Datacite Endpoint:  <a href=\"https://doi.test.datacite.org/clients/dev.fit\">https://doi.test.datacite.org/clients/dev.fit</a></p>\n" + 
+				"    <p>Experiment Version: ||experimentversion_var||</p>\n" + 
+				"    <p>Experiment Metadata: <a href=\"||experimentmetadata_var||\">||experimentmetadata_var||</a></p>\n" + 
+				"    <p>Experiment Artifacts: <a href=\"||experimentresources_var||\">||experimentresources_var||</a></p>\n" + 
+				"    <p>Experiment Platform endpoint: <a href=\"||experimentplatformendpoint_var||\">||experimentplatformendpoint_var||</a></p>\n" + 
+				"    <p>Platform Rest API: <a href=\"||experimentrestapi_var||\">||experimentrestapi_var||</a></p>\n" + 
+				"    <!-- <p>Platform Javodoc: ||experimentjavadoc_var||</p> -->\n" + 
+				"     \n" + 
+				"\n" + 
+				"     For more information or suggestion, contact: <a href = \"mailto: joao.bosco.jares.alves.chaves@fit.fraunhofer.de\">Train Platform Support</a>.\n" + 
+				"    \n" + 
+				"  </body>\n" + 
+				"</html>";
 		return result;
 	}
 
@@ -1151,17 +956,19 @@ public class ServiceFacade {
 	 * @return
 	 * @throws IOException
 	 */
-	public String customlandpage(Train train, String trainId) throws IOException {
-		// File file = new File("src/main/resources/content/lanpageAsTemplate.txt");
-		// String landpage = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+	public String customlandpage(Train train) throws IOException {
 		String page = getTemplate();
-		return page
-				.replace("||doi_var||",
-						train.getDatacite().getIdentifier().getContent() == null ? "8780980/87878098"
-								: "1230980/87871238")
-				.replace("||experimentname_var||", train.getName() == null ? "BMI Train" : "Train 4 BMI")
-				.replace("||projectdescription_var||",
-						train.getDescription() == null ? "BMI Description" : "Description about BMI Train");
+		return page.replace("||experimentname_var||", train.getName())
+				.replace("||experimentdescription_var||", train.getDescription())
+				.replace("||experimentidentifier_var||",
+						"https://doi.org/" + train.getDatacite().getIdentifier().getPrefix() + "/"
+								+ train.getDatacite().getIdentifier().getSuffix())
+				.replace("||experimentdataciteendpoint_var||", train.getDatacite().getIdentifier().getProviderURL())
+				.replace("||experimentversion_var||", train.getInternalVersion())
+				.replace("||experimentmetadata_var||", train.getDatacite().getIdentifier().getMetadataUrl())
+				.replace("||experimentresources_var||", train.getDatacite().getIdentifier().getResourcesUrl())
+				.replace("||experimentplatformendpoint_var||", train.getFlow().getFlowURL())
+				.replace("||experimentrestapi_var||", train.getRestApiDocUrl());
 	}
 
 	// == Nodered Metadata ==
@@ -1608,7 +1415,6 @@ public class ServiceFacade {
 
 	// -- resources into wagons
 
-
 	// -- artifacts into resources
 
 	public Train wrapperTheResourcesObjects(String internalId) {
@@ -1616,14 +1422,11 @@ public class ServiceFacade {
 		TrainMetadataNoderedNODE trainNode = findTrainNodeByCorrelationAndInternalId(train.getCorrelationObjectId(),
 				train.getInternalId());
 
-		
-		
-		
 		List<WagonsMetadataNoderedNODE> wagonNodeList = findWagonListNodeByTrainNode(trainNode);
 		List<Resources> resourcesList = new ArrayList<Resources>();
 		for (WagonsMetadataNoderedNODE wagonNode : wagonNodeList) {
 			List<Wagons> wagonsList = new ArrayList<Wagons>();
-			
+
 			Wagons wagon = findWagonsByCorrelationObjAndInternalId(wagonNode.getCorrelationObjectId(),
 					wagonNode.getInternalId());
 
@@ -1633,24 +1436,23 @@ public class ServiceFacade {
 				List<Artifacts> artifactsList = new ArrayList<Artifacts>();
 				Resources resources = findResourcesByCorrelationObjAndInternalId(rsourceNode.getCorrelationObjectId(),
 						rsourceNode.getInternalId());
-				
+
 				List<ArtifactsMetadataNoderedNODE> artifactsNodeList = findArtifactsNodeListByResourcesNode(
 						rsourceNode);
 
 				for (ArtifactsMetadataNoderedNODE artifactNode : artifactsNodeList) {
 					artifactsList.addAll(findArtifactsListByArtifactsNode(artifactNode));
 				}
-				
+
 				Artifacts[] artifactsArr = artifactsList.toArray(new Artifacts[artifactsList.size()]);
 				resources.setArtifacts(artifactsArr);
 				resourcesList.add(resources);
 			}
 
-			
 			Resources[] resourceArr = resourcesList.toArray(new Resources[resourcesList.size()]);
 			wagon.setResources(resourceArr);
 			wagonsList.add(wagon);
-			
+
 			Wagons[] wagonsArr = wagonsList.toArray(new Wagons[wagonsList.size()]);
 			train.setWagons(wagonsArr);
 			train = saveTrainAsObj(train);
