@@ -16,6 +16,7 @@ import org.apache.http.HttpVersion;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.Response;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -24,7 +25,11 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicHttpResponse;
+import org.apache.http.util.CharsetUtils;
+import org.apache.http.util.EntityUtils;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.http.MediaType;
 
 import ch.qos.logback.core.util.ContentTypeUtil;
 
@@ -47,23 +52,31 @@ public class DataCiteTest {
 	private static final String COMMAND_LINE2 = "curl -X POST -H \"Content-Type: application/vnd.api+json\" --user DEV.FIT:Nahan@123 -d "+"\"/content/my_draft_doi.json\""+" https://api.test.datacite.org/dois -iv";
 
 	
-	@Test
-	public void getDraftDOI() throws Exception {
-		String command = "COMMAND_LINE2";
-		Process process = Runtime.getRuntime().exec(command);
-		process.getInputStream();
-		
-//	    String password = "Nahan@123";
-//	    String username = "DEV.FIT";
-//	CurlExecutor.execute(username, password, TEMPLATE_LOCATION);
-	}
+//	@Ignore
+//	@Test
+//	public void getDraftDOI() throws Exception {
+//		String command = "COMMAND_LINE2";
+//		Process process = Runtime.getRuntime().exec(command);
+//		process.getInputStream();
+//		
+////	    String password = "Nahan@123";
+////	    String username = "DEV.FIT";
+////	CurlExecutor.execute(username, password, TEMPLATE_LOCATION);
+//	}
 	
-	//@Test
+	@Test
 	public void getDOI() throws Exception {
-		//https://api.datacite.org/dois
-		   String hostname = "api.test.datacite.org";
-		    String password = "Nahan@123";
+			String content = "{\n" + 
+					"  \"data\": {\n" + 
+					"    \"type\": \"dois\",\n" + 
+					"    \"attributes\": {\n" + 
+					"      \"prefix\": \"10.5438\"\n" + 
+					"    }\n" + 
+					"  }\n" + 
+					"}";
+			String hostname = "api.test.datacite.org";
 		    String username = "DEV.FIT";
+		    String password = "Nahan@123";
 		   
 		    UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
 		    System.out.println("User: "+creds.getUserPrincipal().getName());
@@ -83,38 +96,42 @@ public class DataCiteTest {
 
 		    
             HttpEntity entity = MultipartEntityBuilder.create()
+            		.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
                     .setCharset(Charset.forName(UTF_8))
-                    .setContentType(ContentType.create(APPLICATION_VND_API_JSON))
-                    .addBinaryBody(TEMPLATE_LOCATION, FileUtils.readFileToByteArray(new File(TEMPLATE_LOCATION)))
+                    .addTextBody("my_draft",content,ContentType.APPLICATION_JSON)
                     .build();
             
-            
-//            HttpPost post = new HttpPost(uri);
-//		    post.addHeader("Content-Type", "application/vnd.api+json");
-//		    post.addHeader("--user","DEV.FIT:Nahan@123");
-//		    post.addHeader("-d",TEMPLATE_LOCATION);
-//		    //post.setEntity(entity);
-//		    System.out.println(post.getURI());
-//		    HttpResponse response = new BasicHttpResponse(HttpVersion.HTTP_1_1,
-//            HttpStatus.SC_OK, OK);
-//
-//            System.out.println(response.getProtocolVersion());
-//            System.out.println(response.getStatusLine().getStatusCode());
-//            System.out.println(response.getStatusLine().getReasonPhrase());
-//            System.out.println(response.getStatusLine().toString());
-   
+            HttpPost post = new HttpPost(uri);
+		    post.setEntity(entity);
+		    HttpResponse response = new BasicHttpResponse(HttpVersion.HTTP_1_1,
+            HttpStatus.SC_OK, OK);
 
+            System.out.println(response.getProtocolVersion());
+            System.out.println(response.getStatusLine().getStatusCode());
+            System.out.println(response.getStatusLine().getReasonPhrase());
+            System.out.println(response.getStatusLine().toString());
+   
             InputStreamEntity reqEntity = new InputStreamEntity(
-                    new FileInputStream(new File(TEMPLATE_LOCATION)), -1, ContentType.create(APPLICATION_VND_API_JSON));
+                    new FileInputStream(new File(TEMPLATE_LOCATION)), -1, ContentType.APPLICATION_OCTET_STREAM);
             reqEntity.setChunked(true);
-            reqEntity.setContentType(APPLICATION_VND_API_JSON);
-            reqEntity.setContentEncoding(UTF_8);
             
-            System.out.println("uri ========>>>  "+uri);
-            System.out.println(
-            Request.Post(uri)
-            .body(reqEntity)
-            .execute().toString()); 
+            System.out.println("1) Result =====>> "+ reqEntity);
+            System.out.println(reqEntity);
+            
+            
+            Response res = Request.Post(uri)
+            .connectTimeout(1000)
+            .socketTimeout(1000)
+            .body(entity)
+            .execute();
+            
+            System.out.println("Result =====>> "+res.returnContent().getType());
+
+	}
+	
+	@Test
+	public void test() {
+		
 	}
 	//@Test
 	public void getDraftDOI2() throws Exception {

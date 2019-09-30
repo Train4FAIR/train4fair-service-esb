@@ -285,4 +285,14 @@ public class TrainUtil {
 		TrainUtil trainUtil = new TrainUtil();
 		System.out.println(trainUtil.convertWiresArrToStr(new String[] {"4bd6287f.d51d88","60b2721.6014e8c"}));
 	}
+
+
+	public static List<String> convertWiresTwoDimensionArrayToStringList(String[][] wires) {
+		List<String> result = new ArrayList<String>();
+		
+		for(String wire:wires[0]) {
+			result.add(wire);
+		}
+		return result;
+	}
 }

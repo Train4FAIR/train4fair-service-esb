@@ -203,6 +203,30 @@ public class TrainAbstract {
 	public void setInternalPointer(String internalPointer) {
 		this.internalPointer = internalPointer;
 	}
+	
+	
+//	@SerializedName("correlationObjectId")
+//	@Expose
+//	private String correlationObjectId;
+//	
+//	
+//
+//
+//
+//	public String getCorrelationObjectId() {
+//		if(!"".equals(this.correlationObjectId)) {
+//			return this.correlationObjectId;
+//		}
+//		
+//		if(this._id!=null && this._id.get()!=null && this._id.get().toString()!=null && !"".equals(this._id.get().toString()) ) {
+//			return this._id.get().toString();
+//		}
+//		throw new RuntimeException("Fail to obtain the field correlationObjectId from TrainAbstract!");
+//	}
+//
+//	public void setCorrelationObjectId(String correlationObjectId) {
+//		this.correlationObjectId = correlationObjectId;
+//	}
 
 
 }

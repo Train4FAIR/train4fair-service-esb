@@ -7,14 +7,11 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -33,11 +30,13 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicHttpResponse;
-import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.env.Environment;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.github.sardine.Sardine;
@@ -82,6 +81,7 @@ import de.fraunhofer.fit.train.persistence.ITrainRepository;
 import de.fraunhofer.fit.train.persistence.ITrainRepositoryNode;
 import de.fraunhofer.fit.train.persistence.IWagonRepository;
 import de.fraunhofer.fit.train.persistence.IWagonsRepositoryNode;
+import de.fraunhofer.fit.train.persistence.IWireHolderRepository;
 import de.fraunhofer.fit.train.servicelocator.TrainServiceLocator;
 import de.fraunhofer.fit.train.util.TrainUtil;
 
@@ -91,9 +91,11 @@ public class ServiceFacade {
 
 	private static final String WELCOME_HTML = "welcome.html";
 
-
 	@Autowired
 	private TrainServiceLocator trainServiceLocator;
+
+	@Autowired
+	private MongoOperations mongoOps;
 
 	@Autowired
 	private Environment env;
@@ -115,25 +117,24 @@ public class ServiceFacade {
 
 	@Autowired
 	private IArtifactRepository artifactRepository;
-	
+
 	@Autowired
 	private ITrainRepositoryNode trainRepositoryNode;
-	
-	
+
 	@Autowired
 	private IWagonsRepositoryNode wagonRepositoryNode;
-	
+
 	@Autowired
 	private IResourcesRepositoryNode resourcesRepositoryNode;
-	
-	
+
 	@Autowired
 	private IArtifactsRepositoryNode artifactsRepositoryNode;
-	
+
 	@Autowired
 	private TrainUtil trainUtil;
-	
-	
+
+	@Autowired
+	private IWireHolderRepository wireHolderRepository;
 
 	public String getInternalId() {
 		InternalId internalId = internalIdRepository.save(new InternalId());
@@ -231,20 +232,19 @@ public class ServiceFacade {
 	public void deleteTrainById(String id) throws IOException, NoSuchAlgorithmException {
 		trainRepository.deleteById(id);
 	}
-	
-	
+
 	public void deleteAllWagons() throws IOException, NoSuchAlgorithmException {
 		wagonRepository.deleteAll();
 	}
-	
+
 	public void deleteAllArtifacts() {
 		artifactRepository.deleteAll();
 	}
-	
+
 	public void deleteAllResources() throws IOException, NoSuchAlgorithmException {
 		resourceRepository.deleteAll();
 	}
-	
+
 	public Train saveUpdateTrain(Train train) throws IOException, NoSuchAlgorithmException {
 		return trainRepository.save(train);
 	}
@@ -252,8 +252,6 @@ public class ServiceFacade {
 	public Resources saveUpdateResource(Resources resources) throws IOException, NoSuchAlgorithmException {
 		return resourceRepository.save(resources);
 	}
-	
-	
 
 	public Train addFilesToWebDav(Train train) throws Exception {
 
@@ -325,7 +323,7 @@ public class ServiceFacade {
 			artifact.setDescription("landpage");
 			artifact.setFilename(WELCOME_HTML);
 			artifact.setFormat(StandardCharsets.UTF_8.toString());
-			artifact.setInternalId(internalId);
+			// artifact.setInternalId(internalId);
 			artifact.setName(WELCOME_HTML);
 			artifact.setFiledata(landpage);
 			Artifacts artifacts = sendToDav(artifact, internalId);
@@ -352,10 +350,10 @@ public class ServiceFacade {
 
 		JSONObject env;
 		env = trainServiceLocator.locateEnvironment(name, type, token);
-		
+
 		String username = env.getString("user");
 		String password = env.getString("pass");
-		Sardine sardine = SardineFactory.begin(username,password);
+		Sardine sardine = SardineFactory.begin(username, password);
 		try {
 			String filePath = "/tmp/webdav/";
 			if (!new File(filePath).exists()) {
@@ -363,11 +361,11 @@ public class ServiceFacade {
 			}
 			String host = env.getString("host");
 			String port = env.getString("port");
-			
-			String webdavdir = "http://"+host+":"+port;
+
+			String webdavdir = "http://" + host + ":" + port;
 			String url = webdavdir + "/" + trainId;
 			if (trainId.equals(artifacts.getInternalId())) {
-				System.out.println("sardine url: "+url);
+				System.out.println("sardine url: " + url);
 				Boolean existURL = sardine.exists(url);
 				if (!existURL) {
 					sardine.createDirectory(url);
@@ -375,20 +373,21 @@ public class ServiceFacade {
 			}
 			String filedata = artifacts.getFiledata();
 			String filename = artifacts.getFilename();
-			if((filename==null || "".equals(filename))&&artifacts.getName()!=null &&
-					!"".equals(artifacts.getName())) {
-				filename = artifacts.getName();	
+			if ((filename == null || "".equals(filename)) && artifacts.getName() != null
+					&& !"".equals(artifacts.getName())) {
+				filename = artifacts.getName();
 			}
-			if(filename==null || "".equals(filename)){
-				throw new RuntimeException("The Artifacts was not sent to webdav since the property name/filename was not set.");
+			if (filename == null || "".equals(filename)) {
+				throw new RuntimeException(
+						"The Artifacts was not sent to webdav since the property name/filename was not set.");
 			}
 			filedata = filedata.split(",")[1];
 			filename = filename.replace("\"", "");
 
 			byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(filedata);
-			
+
 			String filedavUrl = url + "/" + filename.trim();
-			if(sardine.exists(filedavUrl)) {
+			if (sardine.exists(filedavUrl)) {
 				return null;
 			}
 			sardine.put(filedavUrl, fileBytes);
@@ -404,7 +403,7 @@ public class ServiceFacade {
 		}
 
 	}
-	
+
 //	@SuppressWarnings({ "finally", "deprecation" })
 //	public Artifacts sendToDav(Artifacts artifacts, String trainId) throws IOException {
 //
@@ -448,19 +447,110 @@ public class ServiceFacade {
 //	}
 
 	public Wagons findWagonByInternalId(String internalId) {
-		if(wagonRepository.findById(internalId)==null) {
+		if (wagonRepository.findById(internalId) == null) {
 			return null;
 		}
 		return wagonRepository.findById(internalId).get();
 	}
-	
-	public Resources findResourcesByInternalId(String internalId) {
-		if(resourceRepository.findById(internalId)==null) {
+
+	public Wagons findWagonByCorrelationObjectId(String correlationObjectId) {
+		try {
+			for (Wagons wagon : wagonRepository.findAll()) {
+				if (wagon.getCorrelationObjectId() != null && !"".equals(wagon.getCorrelationObjectId())
+						&& wagon.getCorrelationObjectId().equals(correlationObjectId)) {
+					return wagon;
+				}
+			}
+
+		} catch (java.util.NoSuchElementException e) {
 			return null;
 		}
-		return resourceRepository.findById(internalId).get();
+
+		return null;
 	}
-	
+
+	private Wagons findWagonByCorrelationObjectIdAndInternalId(String corrobjId, String internalId) {
+		Query query = new Query();
+		query.addCriteria(Criteria.where("correlationObjectId").is(corrobjId))
+				.addCriteria(Criteria.where("internalId").is(internalId));
+		List<Wagons> wagons = mongoOps.find(query, Wagons.class);
+		if (!wagons.isEmpty()) {
+			return wagons.get(0);
+		} else {
+			return null;
+		}
+	}
+
+	private Wagons findWagonByCorrelationObjectIdAndInternalId(WagonsMetadataNoderedNODE wagonNode, String internalId) {
+		try {
+			for (Wagons wagon : wagonRepository.findAll()) {
+				if (wagon.get_id() == null || "".equals(wagon.get_id().toString())) {
+					continue;
+				}
+
+				Boolean testCollelationObjId = Boolean.FALSE;
+				Boolean testInternalId = Boolean.FALSE;
+				if (wagon.getCorrelationObjectId().equals(wagonNode.getCorrelationObjectId())) {
+					System.out.println(wagon.getName());
+					testCollelationObjId = Boolean.TRUE;
+				}
+
+				if (internalId.equals(wagon.getInternalId())) {
+					testInternalId = Boolean.TRUE;
+
+				}
+
+				System.out.println("============================================");
+				System.out.println("internalId: " + internalId);
+				System.out.println("testInternalId: " + testInternalId);
+				System.out.println("testCollelationObjId: " + testCollelationObjId);
+				System.out.println("============================================\n\n");
+
+				if (testCollelationObjId && testInternalId) {
+					return wagon;
+				}
+
+			}
+
+		} catch (java.util.NoSuchElementException e) {
+			return null;
+		}
+
+		return null;
+	}
+
+	public Resources findResourcesByCorrelationObjectId(String correlationObjectId) {
+		try {
+			for (Resources resource : resourceRepository.findAll()) {
+				if (resource.getCorrelationObjectId() != null && !"".equals(resource.getCorrelationObjectId())
+						&& resource.getCorrelationObjectId().equals(correlationObjectId)) {
+					return resource;
+				}
+			}
+
+		} catch (java.util.NoSuchElementException e) {
+			return null;
+		}
+
+		return null;
+	}
+
+	public Resources findResourcesByInternalId(String internalId) {
+		try {
+			for (Resources resource : resourceRepository.findAll()) {
+				if (resource.getInternalId() != null && !"".equals(resource.getInternalId())
+						&& resource.getInternalId().equals(internalId)) {
+					return resource;
+				}
+			}
+
+		} catch (java.util.NoSuchElementException e) {
+			return null;
+		}
+
+		return null;
+	}
+
 //	public WagonsMetadataNoderedNODE findWagonByInternalId(String internalId) {
 //		try {
 //			Iterable<WagonsMetadataNoderedNODE> list = wagonRepositoryNode.findAll();
@@ -485,18 +575,19 @@ public class ServiceFacade {
 	public Train findTrainByInternalId(String internalId) {
 		try {
 			Iterable<Train> trainList = trainRepository.findAll();
-			for(Train train: trainList) {
-				if(train.getInternalId()!=null && !"".equals(train.getInternalId())&&train.getInternalId().equals(internalId)) {
+			for (Train train : trainList) {
+				if (train.getInternalId() != null && !"".equals(train.getInternalId())
+						&& train.getInternalId().equals(internalId)) {
 					return train;
 				}
 			}
 
-		}catch(java.util.NoSuchElementException e) {
+		} catch (java.util.NoSuchElementException e) {
 			return null;
 		}
 
 		return null;
-		
+
 	}
 
 	public Train getTrainById(String id) throws Exception {
@@ -522,8 +613,8 @@ public class ServiceFacade {
 		if (!result.isEmpty() && result.get(0) != null) {
 			caller = trainRepository.findOneByQuery("internalId", id).get(0);
 		}
-		if (caller != null && caller.get_id() != null && !"".equals(caller.get_id().get().toString())) {
-			opt = trainRepository.findById(caller.get_id().get().toString());
+		if (caller != null && caller.get_id() != null && !"".equals(caller.get_id().toString())) {
+			opt = trainRepository.findById(caller.get_id().toString());
 		} else {
 			throw new RuntimeException("ERROR: searching for: " + id);
 		}
@@ -562,8 +653,8 @@ public class ServiceFacade {
 		if (!result.isEmpty() && result.get(0) != null) {
 			caller = trainRepository.findOneByQuery("description", description).get(0);
 		}
-		if (caller != null && caller.get_id() != null && !"".equals(caller.get_id().get().toString())) {
-			opt = trainRepository.findById(caller.get_id().get().toString());
+		if (caller != null && caller.get_id() != null && !"".equals(caller.get_id().toString())) {
+			opt = trainRepository.findById(caller.get_id().toString());
 		} else {
 			throw new RuntimeException("ERROR: searching for: " + description);
 		}
@@ -874,14 +965,13 @@ public class ServiceFacade {
 		Train train = gson.fromJson(trainStr, Train.class);
 		return trainRepository.save(train);
 	}
-	
-	public Wagons saveWagon(String input) {
-		Gson gson = new Gson();
-		Wagons wagon = gson.fromJson(input, Wagons.class);
-		System.out.println(wagon);
-		return wagonRepository.save(wagon);
-	}
 
+//	public Wagons saveWagon(String input) {
+//		Gson gson = new Gson();
+//		Wagons wagon = gson.fromJson(input, Wagons.class);
+//		System.out.println(wagon);
+//		return wagonRepository.save(wagon);
+//	}
 
 	public Resources saveResources(Resources resources) {
 		return resourceRepository.save(resources);
@@ -898,7 +988,7 @@ public class ServiceFacade {
 		}
 		return wagons.toArray(new Wagons[wagons.size()]);
 	}
-	
+
 	public Wagons findFirstWagonsById(String internalId) {
 		List<Wagons> wagons = new ArrayList<Wagons>();
 
@@ -907,12 +997,12 @@ public class ServiceFacade {
 				wagons.add(wagon);
 			}
 		}
-		if(wagons.isEmpty()) {
+		if (wagons.isEmpty()) {
 			return null;
 		}
 		return wagons.get(0);
 	}
-	
+
 	public Artifacts[] findArtifactsByInternalId(String artifactId) {
 		List<Artifacts> artifacts = new ArrayList<Artifacts>();
 
@@ -923,7 +1013,7 @@ public class ServiceFacade {
 		}
 		return artifacts.toArray(new Artifacts[artifacts.size()]);
 	}
-	
+
 	public Resources[] findResourcesById(String trainId) {
 		List<Resources> resources = new ArrayList<Resources>();
 
@@ -934,7 +1024,7 @@ public class ServiceFacade {
 		}
 		return resources.toArray(new Resources[resources.size()]);
 	}
-	
+
 	public Resources findFirstResourcesByInternalId(String internalId) {
 		List<Resources> resources = new ArrayList<Resources>();
 
@@ -943,7 +1033,7 @@ public class ServiceFacade {
 				resources.add(resource);
 			}
 		}
-		if(resources.isEmpty()) {
+		if (resources.isEmpty()) {
 			return null;
 		}
 		return resources.get(0);
@@ -998,22 +1088,20 @@ public class ServiceFacade {
 		}
 
 	}
-	
+
 	public Artifacts saveArtifacts(Artifacts artifact) {
-			return artifactRepository.save(artifact);
+		return artifactRepository.save(artifact);
 	}
 
 	public Resources saveResource(Resources resource) {
 		return resourceRepository.save(resource);
 	}
-	
-	
 
 	public Wagons saveWagon(Wagons wagon) {
 		return wagonRepository.save(wagon);
 
 	}
-	
+
 	public Artifacts saveArtifact(Artifacts artifact) {
 		return artifactRepository.save(artifact);
 	}
@@ -1022,9 +1110,9 @@ public class ServiceFacade {
 		return resourceRepository.saveAll(Arrays.asList(resources));
 	}
 
-	public Iterable<Wagons> saveWagonsAll(Wagons[] wagons) {
-		return wagonRepository.saveAll(Arrays.asList(wagons));
-	}
+//	public Iterable<Wagons> saveWagonsAll(Wagons[] wagons) {
+//		return wagonRepository.saveAll(Arrays.asList(wagons));
+//	}
 
 	private String getTemplate() {
 		String result = "<!-- https://support.datacite.org/docs/how-do-i-expose-my-datasets-to-google-dataset-search -->\n"
@@ -1076,26 +1164,21 @@ public class ServiceFacade {
 						train.getDescription() == null ? "BMI Description" : "Description about BMI Train");
 	}
 
+	// == Nodered Metadata ==
+	// ==============================================================================
 
+	// ==Train
 
-	//== Nodered Metadata ==
-	//==============================================================================
-	
-	
-	//==Train
-	
 	public TrainMetadataNoderedNODE saveNoderedMetadataTrain(String trainStr) {
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 		TrainMetadataNoderedNODE trainNode = gson.fromJson(trainStr, TrainMetadataNoderedNODE.class);
 		return trainRepositoryNode.save(trainNode);
 	}
-	
+
 	public TrainMetadataNoderedNODE saveNoderedMetadataTrain(TrainMetadataNoderedNODE trainNode) {
 		TrainMetadataNoderedNODE result = trainRepositoryNode.save(trainNode);
 		return result;
 	}
-
-
 
 	public TrainMetadataNoderedNODE findFirstNoderedMetadataTrainByInternalId(String internalId) {
 		List<TrainMetadataNoderedNODE> trainNodeList = new ArrayList<TrainMetadataNoderedNODE>();
@@ -1105,7 +1188,7 @@ public class ServiceFacade {
 				trainNodeList.add(trainNode);
 			}
 		}
-		if(trainNodeList.isEmpty()) {
+		if (trainNodeList.isEmpty()) {
 			return null;
 		}
 		return trainNodeList.get(0);
@@ -1114,7 +1197,7 @@ public class ServiceFacade {
 	public void deleteAllNoderedMetadataTrain() {
 		trainRepositoryNode.deleteAll();
 	}
-	
+
 	public Train findFirstTrainByInternalId(String internalId) {
 		List<Train> trainList = new ArrayList<Train>();
 
@@ -1123,7 +1206,7 @@ public class ServiceFacade {
 				trainList.add(train);
 			}
 		}
-		if(trainList.isEmpty()) {
+		if (trainList.isEmpty()) {
 			return null;
 		}
 		return trainList.get(0);
@@ -1132,28 +1215,29 @@ public class ServiceFacade {
 	public Train saveTrainAsStr(String input) {
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 		Train train = gson.fromJson(input, Train.class);
-		if (train.getInternalId() == null || train.getInternalPointer()==null) {
-			throw new RuntimeException("Error while saving the Train. The internalId or internalPointer attributes should be empty or null");
+		if (train.getInternalId() == null || train.getInternalPointer() == null) {
+			throw new RuntimeException(
+					"Error while saving the Train. The internalId or internalPointer attributes should be empty or null");
 		}
 		try {
 			return trainRepository.save(train);
-		}catch(Exception e) {
-			throw new RuntimeException("Fail to save the Train",e);
-		}	}
-	
-	public Train saveTrainAsObj(Train train) {
-		if (train.getInternalId() == null || train.getInternalPointer()==null) {
-			throw new RuntimeException("Error while saving the Train. The internalId or internalPointer attributes should be empty or null");
+		} catch (Exception e) {
+			throw new RuntimeException("Fail to save the Train", e);
 		}
-		try {
-			return trainRepository.save(train);
-		}catch(Exception e) {
-			throw new RuntimeException("Fail to save the Train",e);
-		}
-		
 	}
 
+	public Train saveTrainAsObj(Train train) {
+		if (train.getInternalId() == null || train.getInternalPointer() == null) {
+			throw new RuntimeException(
+					"Error while saving the Train. The internalId or internalPointer attributes should be empty or null");
+		}
+		try {
+			return trainRepository.save(train);
+		} catch (Exception e) {
+			throw new RuntimeException("Fail to save the Train", e);
+		}
 
+	}
 
 //==Wagon
 
@@ -1161,56 +1245,62 @@ public class ServiceFacade {
 		WagonsMetadataNoderedNODE result = wagonRepositoryNode.save(wagonNode);
 		return result;
 	}
-	
+
 	public WagonsMetadataNoderedNODE saveNoderedMetadataWagon(String input) {
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 		WagonsMetadataNoderedNODE wagonNode = gson.fromJson(input, WagonsMetadataNoderedNODE.class);
 		return wagonRepositoryNode.save(wagonNode);
 	}
-	
+
 	public WagonsMetadataNoderedNODE findNoderedMetadataWagonByInternalId(String id) {
 		try {
 			Optional<WagonsMetadataNoderedNODE> optTrain = wagonRepositoryNode.findById(id);
-			if(optTrain!=null) {
-				return wagonRepositoryNode.findById(id).get();	
+			if (optTrain != null) {
+				return wagonRepositoryNode.findById(id).get();
 			}
-		}catch(java.util.NoSuchElementException e) {
+		} catch (java.util.NoSuchElementException e) {
 			return null;
 		}
 
 		return null;
-		
+
 	}
-	
-	public WagonsMetadataNoderedNODE findNoderedMetadataWagonByInternalIdAndId(String internalId,String resourcesWireToWagon) {
-		
-		for(WagonsMetadataNoderedNODE wagonsMetadataNoderedNODE:wagonRepositoryNode.findAll()) {
-			if(resourcesWireToWagon.equals(wagonsMetadataNoderedNODE.getId())) {
+
+	public WagonsMetadataNoderedNODE findNoderedMetadataWagonByInternalIdAndId(String internalId,
+			String resourcesWireToWagon) {
+
+		for (WagonsMetadataNoderedNODE wagonsMetadataNoderedNODE : wagonRepositoryNode.findAll()) {
+			if (resourcesWireToWagon.equals(wagonsMetadataNoderedNODE.getId())) {
 				System.out.println(wagonsMetadataNoderedNODE.getId());
 				return wagonsMetadataNoderedNODE;
 			}
 		}
 		return null;
 	}
-	
-	public ResourcesMetadataNoderedNODE findWagonNodeByInternalIdAndId(String internalId,String resourcesWireToWagon) {
-		
-		for(ResourcesMetadataNoderedNODE resourcesMetadataNoderedNODE:resourcesRepositoryNode.findAll()) {
-			if(resourcesWireToWagon.equals(resourcesMetadataNoderedNODE.getId())) {
+
+	public ResourcesMetadataNoderedNODE findWagonNodeByInternalIdAndId(String internalId, String resourcesWireToWagon) {
+
+		for (ResourcesMetadataNoderedNODE resourcesMetadataNoderedNODE : resourcesRepositoryNode.findAll()) {
+			if (resourcesWireToWagon.equals(resourcesMetadataNoderedNODE.getId())) {
 				System.out.println(resourcesMetadataNoderedNODE.getId());
 				return resourcesMetadataNoderedNODE;
 			}
 		}
 		return null;
 	}
-	
-	
-	
-	public ResourcesMetadataNoderedNODE findNoderedMetadataResourceByInternalIdAndId(String internalId,String resourcesWireToWagon) {
-		
-		for(ResourcesMetadataNoderedNODE resourcesMetadataNoderedNODE:resourcesRepositoryNode.findAll()) {
-			if(resourcesWireToWagon.equals(resourcesMetadataNoderedNODE.getId())) {
-				System.out.println(resourcesMetadataNoderedNODE.getId());
+
+	public ResourcesMetadataNoderedNODE findNoderedMetadataResourceByInternalIdAndId(String internalId,
+			String resourcesWireToWagon) {
+
+		for (ResourcesMetadataNoderedNODE resourcesMetadataNoderedNODE : resourcesRepositoryNode.findAll()) {
+			System.out.println("resourcesWireToWagon: " + resourcesWireToWagon);
+			System.out.println("resourcesMetadataNoderedNODE.getId(): " + resourcesMetadataNoderedNODE.getId());
+
+			if (resourcesWireToWagon.trim().equals(resourcesMetadataNoderedNODE.getId().toString().trim())
+					&& internalId.equals(resourcesMetadataNoderedNODE.getInternalId())) {
+				System.out.println("resourcesWireToWagon internalid: " + internalId);
+				System.out.println("resourcesMetadataNoderedNODE.getId() internalid: "
+						+ resourcesMetadataNoderedNODE.getInternalId());
 				return resourcesMetadataNoderedNODE;
 			}
 		}
@@ -1219,9 +1309,9 @@ public class ServiceFacade {
 
 	public void deleteAllNoderedMetadataWagon() {
 		wagonRepositoryNode.deleteAll();
-		
+
 	}
-	
+
 	public WagonsMetadataNoderedNODE[] findWagonNodeByInternalId(String internalId) {
 		List<WagonsMetadataNoderedNODE> wagonsList = new ArrayList<WagonsMetadataNoderedNODE>();
 
@@ -1232,8 +1322,9 @@ public class ServiceFacade {
 		}
 		return wagonsList.toArray(new WagonsMetadataNoderedNODE[wagonsList.size()]);
 	}
-	
-	public WagonsMetadataNoderedNODE[] findWagonsArrByInternalIdAndParentWireId(String internalId,String parentWireId) {
+
+	public WagonsMetadataNoderedNODE[] findWagonsArrByInternalIdAndParentWireId(String internalId,
+			String parentWireId) {
 		List<WagonsMetadataNoderedNODE> wagonsList = new ArrayList<WagonsMetadataNoderedNODE>();
 
 		for (WagonsMetadataNoderedNODE wagon : wagonRepositoryNode.findAll()) {
@@ -1243,49 +1334,49 @@ public class ServiceFacade {
 		}
 		return wagonsList.toArray(new WagonsMetadataNoderedNODE[wagonsList.size()]);
 	}
-	
+
 	public WagonsMetadataNoderedNODE[] findWagonsArrByInternalId(String internalId) {
 		List<WagonsMetadataNoderedNODE> wagonsList = new ArrayList<WagonsMetadataNoderedNODE>();
 
 		for (WagonsMetadataNoderedNODE wagon : wagonRepositoryNode.findAll()) {
-				wagonsList.add(wagon);
+			wagonsList.add(wagon);
 		}
 		return wagonsList.toArray(new WagonsMetadataNoderedNODE[wagonsList.size()]);
 	}
 
-	//==Resources
-	
-	public ResourcesMetadataNoderedNODE findNoderedMetadataResourcesByInternalIdAndId(String internalId,String resourcesWireToWagon) {
-		
-		for(ResourcesMetadataNoderedNODE wagonsMetadataNoderedNODE:resourcesRepositoryNode.findAll()) {
-			if(resourcesWireToWagon.equals(wagonsMetadataNoderedNODE.getId())) {
+	// ==Resources
+
+	public ResourcesMetadataNoderedNODE findNoderedMetadataResourcesByInternalIdAndId(String internalId,
+			String resourcesWireToWagon) {
+
+		for (ResourcesMetadataNoderedNODE wagonsMetadataNoderedNODE : resourcesRepositoryNode.findAll()) {
+			if (resourcesWireToWagon.equals(wagonsMetadataNoderedNODE.getId())) {
 				System.out.println(wagonsMetadataNoderedNODE.getId());
 				return wagonsMetadataNoderedNODE;
 			}
 		}
 		return null;
 	}
-	
+
 	public ResourcesMetadataNoderedNODE saveNoderedMetadataResources(ResourcesMetadataNoderedNODE trainNode) {
 		ResourcesMetadataNoderedNODE result = resourcesRepositoryNode.save(trainNode);
 		return result;
 	}
-	
-	
+
 	public ResourcesMetadataNoderedNODE findNoderedMetadataResourcesByInternalId(String id) {
 		try {
 			Optional<ResourcesMetadataNoderedNODE> optTrain = resourcesRepositoryNode.findById(id);
-			if(optTrain!=null) {
-				return resourcesRepositoryNode.findById(id).get();	
+			if (optTrain != null) {
+				return resourcesRepositoryNode.findById(id).get();
 			}
-		}catch(java.util.NoSuchElementException e) {
+		} catch (java.util.NoSuchElementException e) {
 			return null;
 		}
 
 		return null;
-		
+
 	}
-	
+
 	public ResourcesMetadataNoderedNODE findFirstResourcesNodeById(String internalId) {
 		List<ResourcesMetadataNoderedNODE> resourceList = new ArrayList<ResourcesMetadataNoderedNODE>();
 
@@ -1294,45 +1385,42 @@ public class ServiceFacade {
 				resourceList.add(resourceNode);
 			}
 		}
-		if(resourceList.isEmpty()) {
+		if (resourceList.isEmpty()) {
 			return null;
 		}
 		return resourceList.get(0);
 	}
-	
-	
 
 	public void deleteAllNoderedMetadataResources() {
 		resourcesRepositoryNode.deleteAll();
-		
+
 	}
 //==Artifacts
-	
+
 	public ArtifactsMetadataNoderedNODE saveNoderedMetadataArtifacts(ArtifactsMetadataNoderedNODE trainNode) {
 		ArtifactsMetadataNoderedNODE result = artifactsRepositoryNode.save(trainNode);
 		return result;
 	}
-	
-	
+
 	public ArtifactsMetadataNoderedNODE findNoderedMetadataArtifactsByInternalId(String id) {
 		try {
 			Optional<ArtifactsMetadataNoderedNODE> optTrain = artifactsRepositoryNode.findById(id);
-			if(optTrain!=null) {
-				return artifactsRepositoryNode.findById(id).get();	
+			if (optTrain != null) {
+				return artifactsRepositoryNode.findById(id).get();
 			}
-		}catch(java.util.NoSuchElementException e) {
+		} catch (java.util.NoSuchElementException e) {
 			return null;
 		}
 
 		return null;
-		
+
 	}
 
 	public void deleteAllNoderedMetadataArtifacts() {
 		artifactsRepositoryNode.deleteAll();
-		
+
 	}
-	
+
 	public Artifacts findFirstArtifactByInternalId(String internalId) {
 		List<Artifacts> resources = new ArrayList<Artifacts>();
 
@@ -1341,191 +1429,417 @@ public class ServiceFacade {
 				resources.add(artifact);
 			}
 		}
-		if(resources.isEmpty()) {
+		if (resources.isEmpty()) {
 			return null;
 		}
 		return resources.get(0);
 	}
-	
-	//==
-	
-	//==Execute: wrapper
-	
-	//-- wagons into train
+
+	// ==
+
+	// ==Execute: wrapper
+
+	// -- wagons into train
 	@SuppressWarnings("null")
 	public Train wrapperTheTrainObjects(String internalId) {
 		Train train = findFirstTrainByInternalId(internalId);
-		List<String> trainWires = TrainUtil.convertWiresInternalIdStrToListStr(train.getInternalPointer());
-		TrainMetadataNoderedNODE trainNode = findFirstNoderedMetadataTrainByInternalId(internalId);
-		List<Wagons> wagonList = new ArrayList<Wagons>();
-		for(String trainWiresToWagons:trainWires) {
-			//System.out.println(trainWiresToWagons);
-			WagonsMetadataNoderedNODE wagonNode = findNoderedMetadataWagonByInternalIdAndId(internalId,trainWiresToWagons);
-			if(wagonNode==null || wagonNode.getParentWireId()==null || wagonNode.getParentWireId().length==0) {
-				continue;
-			}
-			
-			if(!TrainUtil.convertWiresArrToStr(wagonNode.getParentWireId()).contains(trainNode.getId())) {
-				continue;
-			}
-			Wagons wagon = findWagonByInternalId(wagonNode.getCorrelationObjectId());
-			wagonList.add(wagon);
-		}
-		Wagons[] wagonsArr = wagonList.toArray(new Wagons[wagonList.size()]); 
+		TrainMetadataNoderedNODE trainNode = findTrainNodeByCorrelationAndInternalId(train.getCorrelationObjectId(),
+				train.getInternalId());
+
+		List<WagonsMetadataNoderedNODE> wagonNodeList = findWagonListNodeByTrainNode(trainNode);
+		List<Wagons> wagonsList = findWagonsListByWagonNodeList(wagonNodeList);
+
+		Wagons[] wagonsArr = wagonsList.toArray(new Wagons[wagonsList.size()]);
 		train.setWagons(wagonsArr);
 		train = saveTrainAsObj(train);
+
 		return train;
 	}
- 
-	//-- resources into wagons 
+
 	public Train wrapperTheWagonObjects(String internalId) {
 		Train train = findFirstTrainByInternalId(internalId);
-		if(train.getWagons()==null || train.getWagons().length==0) {
-			return train;
-		}
-		
-		List<Resources> resourcesList = new ArrayList<Resources>();
-		List<Wagons> wagonList = new ArrayList<Wagons>();
-		
-		
-		for(int i = 0;i<train.getWagons().length;) {
-			Wagons wagon = train.getWagons()[i];
-			WagonsMetadataNoderedNODE wagonNode = findNoderedMetadataWagonByCorrelationObjectId(wagon.getCorrelationObjectId());
-			if(wagonNode==null || wagonNode.getId()==null || "".equals(wagonNode.getId())) {
-				return train;
-			}
-			
-			List<String> wagonnWires = TrainUtil.convertWiresInternalIdStrToListStr(wagon.getInternalPointer());
-			for(String wagonWire:wagonnWires) {
-				ResourcesMetadataNoderedNODE resourceNode = findNoderedMetadataResourceByInternalIdAndId(internalId,wagonWire);
-				if(resourceNode==null || resourceNode.getCorrelationObjectId()==null || "".equals(resourceNode.getCorrelationObjectId())) {
-					return train;
-				}
-				if(resourceNode==null || resourceNode.getParentWireId()==null || resourceNode.getParentWireId().length==0) {
-					continue;
-				}
-				
-				if(!TrainUtil.convertWiresArrToStr(resourceNode.getParentWireId()).contains(wagonNode.getId())) {
-					continue;
-				}
-				
+		TrainMetadataNoderedNODE trainNode = findTrainNodeByCorrelationAndInternalId(train.getCorrelationObjectId(),
+				train.getInternalId());
 
-				Resources resources = findResourcesByInternalId(resourceNode.getCorrelationObjectId());
-				resourcesList.add(resources);
-				//System.out.println(resourceNode.getId());
-				
+		List<Wagons> wagonsList = new ArrayList<Wagons>();
+		List<WagonsMetadataNoderedNODE> wagonNodeList = findWagonListNodeByTrainNode(trainNode);
+
+		for (WagonsMetadataNoderedNODE wagonNode : wagonNodeList) {
+
+			List<ResourcesMetadataNoderedNODE> resourceNodeList = findResourceNodeListNodeByWagonNode(wagonNode);
+
+			for (ResourcesMetadataNoderedNODE rsourceNode : resourceNodeList) {
+				List<Resources> resourceList = findResourceListByResourceNode(rsourceNode);
+
+				Wagons wagon = findWagonsByCorrelationObjAndInternalId(wagonNode.getCorrelationObjectId(),
+						wagonNode.getInternalId());
+
+				Resources[] resourceArr = resourceList.toArray(new Resources[resourceList.size()]);
+				wagon.setResources(resourceArr);
+				wagonsList.add(wagon);
+
+				Wagons[] wagonsArr = wagonsList.toArray(new Wagons[wagonsList.size()]);
+				train.setWagons(wagonsArr);
+				train = saveTrainAsObj(train);
 			}
-			if(resourcesList==null || resourcesList.isEmpty()) {
-				return train;
-			}
-			Resources[] resourcesArr = resourcesList.toArray(new Resources[resourcesList.size()]); 
-			wagon.setResources(resourcesArr);
-			wagonList.add(wagon);
-			i++;
+
 		}
-		
-		Wagons[] wagonsArr = wagonList.toArray(new Wagons[wagonList.size()]); 
-		train.setWagons(wagonsArr);
-		train = saveTrainAsObj(train);
+
 		return train;
+	}
 
+	private Wagons findWagonsByCorrelationObjAndInternalId(String correlationObjectId, String internalId) {
+		Query query = new Query();
+		query.addCriteria(Criteria.where("correlationObjectId").is(correlationObjectId))
+				.addCriteria(Criteria.where("internalId").is(internalId));
+		List<Wagons> wagons = mongoOps.find(query, Wagons.class);
+		if (!wagons.isEmpty()) {
+			return wagons.get(0);
+		} else {
+			return null;
+		}
+	}
+
+	private List<ResourcesMetadataNoderedNODE> findResourceNodeListNodeByWagonNode(
+			WagonsMetadataNoderedNODE wagonNode) {
+		List<ResourcesMetadataNoderedNODE> resourceNodeListResult = new ArrayList<ResourcesMetadataNoderedNODE>();
+
+		Query query = new Query();
+		query = new Query();
+		query.addCriteria(
+				Criteria.where("internalId").is(wagonNode.getInternalId()).and("parentWireId").is(wagonNode.getId()));
+		resourceNodeListResult = (mongoOps.find(query, ResourcesMetadataNoderedNODE.class));
+
+		if (!resourceNodeListResult.isEmpty()) {
+			return resourceNodeListResult;
+		} else {
+			return null;
+		}
 
 	}
 
+	private List<Resources> findResourceListByResourceNode(ResourcesMetadataNoderedNODE resourceNode) {
+		List<Resources> resourceResultList = new ArrayList<Resources>();
+		Query query = new Query();
 
-	//-- artifacts into resources 
+		query = new Query();
+		query.addCriteria(Criteria.where("internalId").is(resourceNode.getInternalId()).and("correlationObjectId")
+				.is(resourceNode.getCorrelationObjectId()));
+		resourceResultList = mongoOps.find(query, Resources.class);
+
+		if (!resourceResultList.isEmpty()) {
+			return resourceResultList;
+		} else {
+			return null;
+		}
+
+	}
+
+	private List<Resources> findResourceListByResourceNodeList(List<ResourcesMetadataNoderedNODE> resourceNodeList) {
+		List<Resources> resourceResultList = new ArrayList<Resources>();
+		Query query = new Query();
+
+		for (ResourcesMetadataNoderedNODE resourceNode : resourceNodeList) {
+			query = new Query();
+			query.addCriteria(Criteria.where("internalId").is(resourceNode.getInternalId()).and("correlationObjectId")
+					.is(resourceNode.getCorrelationObjectId()));
+			resourceResultList.addAll(mongoOps.find(query, Resources.class));
+		}
+
+		return resourceResultList;
+	}
+
+	private List<ResourcesMetadataNoderedNODE> findResourceNodeListNodeByWagonNodeList(
+			List<WagonsMetadataNoderedNODE> wagonNodeList) {
+		List<ResourcesMetadataNoderedNODE> resourceNodeListResult = new ArrayList<ResourcesMetadataNoderedNODE>();
+
+		// resourceNodeListResult
+		for (WagonsMetadataNoderedNODE wagonNode : wagonNodeList) {
+			Query query = new Query();
+			query = new Query();
+			query.addCriteria(Criteria.where("internalId").is(wagonNode.getInternalId()).and("parentWireId")
+					.is(wagonNode.getId()));
+			resourceNodeListResult.addAll(mongoOps.find(query, ResourcesMetadataNoderedNODE.class));
+		}
+
+		return resourceNodeListResult;
+	}
+
+	private List<Wagons> findWagonsListByWagonNodeList(List<WagonsMetadataNoderedNODE> wagonNodeList) {
+		List<Wagons> wagonsResultList = new ArrayList<Wagons>();
+		Query query = new Query();
+
+		for (WagonsMetadataNoderedNODE wagonNode : wagonNodeList) {
+			query = new Query();
+			query.addCriteria(Criteria.where("internalId").is(wagonNode.getInternalId()).and("correlationObjectId")
+					.is(wagonNode.getCorrelationObjectId()));
+			List<Wagons> wagonsList = mongoOps.find(query, Wagons.class);
+			wagonsResultList.addAll(wagonsList);
+		}
+
+		return wagonsResultList;
+	}
+
+	private List<WagonsMetadataNoderedNODE> findWagonListNodeByTrainNode(TrainMetadataNoderedNODE trainNode) {
+		Query query = new Query();
+		query = new Query();
+		query.addCriteria(
+				Criteria.where("internalId").is(trainNode.getInternalId()).and("parentWireId").is(trainNode.getId()));
+		List<WagonsMetadataNoderedNODE> wagonNodeList = mongoOps.find(query, WagonsMetadataNoderedNODE.class);
+		return wagonNodeList;
+	}
+
+	private TrainMetadataNoderedNODE findTrainNodeByCorrelationAndInternalId(String correlationObjectId,
+			String internalId) {
+		Query query = new Query();
+		query.addCriteria(Criteria.where("correlationObjectId").is(correlationObjectId))
+				.addCriteria(Criteria.where("internalId").is(internalId));
+
+		TrainMetadataNoderedNODE trainNode = null;
+		List<TrainMetadataNoderedNODE> trainList = mongoOps.find(query, TrainMetadataNoderedNODE.class);
+		if (!trainList.isEmpty()) {
+			trainNode = trainList.get(0);
+			return trainNode;
+		} else {
+			return null;
+		}
+
+	}
+
+	// -- resources into wagons
+
+
+	// -- artifacts into resources
+
 	public Train wrapperTheResourcesObjects(String internalId) {
 		Train train = findFirstTrainByInternalId(internalId);
-		if(train.getWagons()==null || train.getWagons().length==0) {
-			return train;
-		}
+		TrainMetadataNoderedNODE trainNode = findTrainNodeByCorrelationAndInternalId(train.getCorrelationObjectId(),
+				train.getInternalId());
+
 		
+		
+		
+		List<WagonsMetadataNoderedNODE> wagonNodeList = findWagonListNodeByTrainNode(trainNode);
 		List<Resources> resourcesList = new ArrayList<Resources>();
-		List<Wagons> wagonsList = new ArrayList<Wagons>();
-		List<Artifacts> artifacstList = new ArrayList<Artifacts>();
-		
-		
-		for(int i = 0;i<train.getWagons().length;) {
-			Wagons wagon = train.getWagons()[i];
-			WagonsMetadataNoderedNODE wagonNode = findNoderedMetadataWagonByCorrelationObjectId(wagon.getCorrelationObjectId());
-			if(wagonNode==null || wagonNode.getId()==null || "".equals(wagonNode.getId())) {
-				return train;
-			}
+		for (WagonsMetadataNoderedNODE wagonNode : wagonNodeList) {
+			List<Wagons> wagonsList = new ArrayList<Wagons>();
 			
-			List<String> wagonnWires = TrainUtil.convertWiresInternalIdStrToListStr(wagon.getInternalPointer());
-			for(String wagonWire:wagonnWires) {
-				ResourcesMetadataNoderedNODE resourceNode = findNoderedMetadataResourceByInternalIdAndId(internalId,wagonWire);
-				if(resourceNode==null || resourceNode.getCorrelationObjectId()==null || "".equals(resourceNode.getCorrelationObjectId())) {
-					return train;
-				}
-				if(resourceNode==null || resourceNode.getParentWireId()==null || resourceNode.getParentWireId().length==0) {
-					continue;
-				}
-				
-				if(!TrainUtil.convertWiresArrToStr(resourceNode.getParentWireId()).contains(wagonNode.getId())) {
-					continue;
-				}
+			Wagons wagon = findWagonsByCorrelationObjAndInternalId(wagonNode.getCorrelationObjectId(),
+					wagonNode.getInternalId());
 
-				Resources resources = findResourcesByInternalId(resourceNode.getCorrelationObjectId());
+			List<ResourcesMetadataNoderedNODE> resourceNodeList = findResourceNodeListNodeByWagonNode(wagonNode);
+
+			for (ResourcesMetadataNoderedNODE rsourceNode : resourceNodeList) {
+				List<Artifacts> artifactsList = new ArrayList<Artifacts>();
+				Resources resources = findResourcesByCorrelationObjAndInternalId(rsourceNode.getCorrelationObjectId(),
+						rsourceNode.getInternalId());
 				
-				if(resources==null || resources.getInternalPointer()==null || 
-						resources.getInternalPointer().length()==0) {
-					continue;
+				List<ArtifactsMetadataNoderedNODE> artifactsNodeList = findArtifactsNodeListByResourcesNode(
+						rsourceNode);
+
+				for (ArtifactsMetadataNoderedNODE artifactNode : artifactsNodeList) {
+					artifactsList.addAll(findArtifactsListByArtifactsNode(artifactNode));
 				}
 				
-				String[] resourceWiresArr = resources.getInternalPointer().split(",");
-				System.out.println("====>> "+Arrays.asList(resourceWiresArr));
-				
-				List<ArtifactsMetadataNoderedNODE> artifactsNodeList = findArtifactsNodeByAndResourceNodeId(resourceNode.getId());
-				System.out.println("artifactsNodeList: "+Arrays.asList(artifactsNodeList));
-				for(ArtifactsMetadataNoderedNODE artifactNode:artifactsNodeList) {
-					//List<Artifacts> artifacts = findArtifactCorrelationObjectId(artifactNode.getCorrelationObjectId());
-					List<Artifacts> artifacts = findAllArtifacts();
-					
-					for(Artifacts artfct:artifacts) {
-						
-
-						for(String resourceWiresStr:resourceWiresArr) {
-							System.out.println("================================================");
-							System.out.println("resourceWiresStr: "+resourceWiresStr);
-							System.out.println("artifactNode.getId(): "+artifactNode.getId());
-							System.out.println("================================================");
-							
-							if(resourceWiresStr.equals(artifactNode.getId())) {
-								System.out.println("!!!!===>>> artfct.getName(): "+artfct.getName()+" ====");
-								artifacstList.add(artfct);
-							}
-							System.out.println("================================================");
-						}
-
-					}
-
-				}
-				
-				resources.setArtifacts(artifacstList.toArray(new Artifacts[artifacstList.size()]));
+				Artifacts[] artifactsArr = artifactsList.toArray(new Artifacts[artifactsList.size()]);
+				resources.setArtifacts(artifactsArr);
 				resourcesList.add(resources);
-				
 			}
-			if(resourcesList==null || resourcesList.isEmpty()) {
-				return train;
-			}
-			Resources[] resourcesArr = resourcesList.toArray(new Resources[resourcesList.size()]); 
-			wagon.setResources(resourcesArr);
+
+			
+			Resources[] resourceArr = resourcesList.toArray(new Resources[resourcesList.size()]);
+			wagon.setResources(resourceArr);
 			wagonsList.add(wagon);
-			i++;
+			
+			Wagons[] wagonsArr = wagonsList.toArray(new Wagons[wagonsList.size()]);
+			train.setWagons(wagonsArr);
+			train = saveTrainAsObj(train);
 		}
-		
-		Wagons[] wagonsArr = wagonsList.toArray(new Wagons[wagonsList.size()]); 
-		train.setWagons(wagonsArr);
-		train = saveTrainAsObj(train);
+
 		return train;
-
-
 	}
-	
+
+	private Resources findResourcesByCorrelationObjAndInternalId(String correlationObjectId, String internalId) {
+		Query query = new Query();
+		query.addCriteria(Criteria.where("correlationObjectId").is(correlationObjectId))
+				.addCriteria(Criteria.where("internalId").is(internalId));
+		List<Resources> resources = mongoOps.find(query, Resources.class);
+		if (!resources.isEmpty()) {
+			return resources.get(0);
+		} else {
+			return null;
+		}
+	}
+
+	private List<Artifacts> findArtifactsListByArtifactsNode(ArtifactsMetadataNoderedNODE artifactNode) {
+		List<Artifacts> artifactsResultList = new ArrayList<Artifacts>();
+		Query query = new Query();
+
+		query = new Query();
+		query.addCriteria(Criteria.where("internalId").is(artifactNode.getInternalId()).and("correlationObjectId")
+				.is(artifactNode.getCorrelationObjectId()));
+		artifactsResultList = mongoOps.find(query, Artifacts.class);
+
+		if (!artifactsResultList.isEmpty()) {
+			return artifactsResultList;
+		} else {
+			return null;
+		}
+	}
+
+	private List<ArtifactsMetadataNoderedNODE> findArtifactsNodeListByResourcesNode(
+			ResourcesMetadataNoderedNODE rsourceNode) {
+		List<ArtifactsMetadataNoderedNODE> artifactsNodeListResult = new ArrayList<ArtifactsMetadataNoderedNODE>();
+
+		Query query = new Query();
+		query = new Query();
+		query.addCriteria(Criteria.where("internalId").is(rsourceNode.getInternalId()).and("parentWireId")
+				.is(rsourceNode.getId()));
+		artifactsNodeListResult = (mongoOps.find(query, ArtifactsMetadataNoderedNODE.class));
+
+		if (!artifactsNodeListResult.isEmpty()) {
+			return artifactsNodeListResult;
+		} else {
+			return null;
+		}
+	}
+
+//	public Train wrapperTheResourcesObjects(String internalId) {
+//		Train train = findFirstTrainByInternalId(internalId);
+//		if (train.getWagons() == null || train.getWagons().length == 0) {
+//			return train;
+//		}
+//
+//		List<Resources> resourcesList = new ArrayList<Resources>();
+//		List<Wagons> wagonsList = new ArrayList<Wagons>();
+//		List<Artifacts> artifacstList = new ArrayList<Artifacts>();
+//
+//		for (Wagons wagon : train.getWagons()) {
+//			WagonsMetadataNoderedNODE wagonNode = findNoderedMetadataWagonByCorrelationObjectId(
+//					wagon.getCorrelationObjectId());
+//			if (wagonNode == null || wagonNode.getId() == null || "".equals(wagonNode.getId())) {
+//				return train;
+//			}
+//
+//			List<String> wagonnWires = TrainUtil.convertWiresInternalIdStrToListStr(wagon.getInternalPointer());
+//			for (String wagonWire : wagonnWires) {
+//				ResourcesMetadataNoderedNODE resourceNode = findNoderedMetadataResourceByInternalIdAndId(internalId,
+//						wagonWire);
+//				if (resourceNode == null || resourceNode.getCorrelationObjectId() == null
+//						|| "".equals(resourceNode.getCorrelationObjectId())) {
+//					return train;
+//				}
+//				if (resourceNode == null || resourceNode.getParentWireId() == null
+//						|| resourceNode.getParentWireId().length == 0) {
+//					continue;
+//				}
+//
+//				if (!TrainUtil.convertWiresArrToStr(resourceNode.getParentWireId()).contains(wagonNode.getId())) {
+//					continue;
+//				}
+//
+//				Resources resources = findResourcesByCorrelationObjectId(resourceNode.getCorrelationObjectId());
+//
+//				if (resources == null || resources.getInternalPointer() == null
+//						|| "".equals(resources.getInternalPointer())) {
+//					continue;
+//				}
+//
+//				List<Artifacts> artifactsList = findArtifactsNodeByAndResourceNodeId(resourceNode,
+//						resources.getInternalId());
+//
+//				if (artifactsList == null || artifactsList.isEmpty()) {
+//					continue;
+//				}
+//				artifacstList.addAll(artifactsList);
+//				resources.setArtifacts(artifacstList.toArray(new Artifacts[artifacstList.size()]));
+//				resourcesList.add(resources);
+//
+//			}
+//			if (resourcesList == null || resourcesList.isEmpty()) {
+//				continue;
+//			}
+//			Resources[] resourcesArr = resourcesList.toArray(new Resources[resourcesList.size()]);
+//			wagon.setResources(resourcesArr);
+//			wagonsList.add(wagon);
+//		}
+//
+//		Wagons[] wagonsArr = wagonsList.toArray(new Wagons[wagonsList.size()]);
+//		train.setWagons(wagonsArr);
+//		train = saveTrainAsObj(train);
+//		return train;
+//
+//	}
+//	public Train wrapperTheResourcesObjects(String internalId) {
+//		Train train = findFirstTrainByInternalId(internalId);
+//		if (train.getWagons() == null || train.getWagons().length == 0) {
+//			return train;
+//		}
+//
+//		List<Resources> resourcesList = new ArrayList<Resources>();
+//		List<Wagons> wagonsList = new ArrayList<Wagons>();
+//		List<Artifacts> artifacstList = new ArrayList<Artifacts>();
+//
+//		for (Wagons wagon : train.getWagons()) {
+//			WagonsMetadataNoderedNODE wagonNode = findNoderedMetadataWagonByCorrelationObjectId(
+//					wagon.getCorrelationObjectId());
+//			if (wagonNode == null || wagonNode.getId() == null || "".equals(wagonNode.getId())) {
+//				return train;
+//			}
+//
+//			List<String> wagonnWires = TrainUtil.convertWiresInternalIdStrToListStr(wagon.getInternalPointer());
+//			for (String wagonWire : wagonnWires) {
+//				ResourcesMetadataNoderedNODE resourceNode = findNoderedMetadataResourceByInternalIdAndId(internalId,
+//						wagonWire);
+//				if (resourceNode == null || resourceNode.getCorrelationObjectId() == null
+//						|| "".equals(resourceNode.getCorrelationObjectId())) {
+//					return train;
+//				}
+//				if (resourceNode == null || resourceNode.getParentWireId() == null
+//						|| resourceNode.getParentWireId().length == 0) {
+//					continue;
+//				}
+//
+//				if (!TrainUtil.convertWiresArrToStr(resourceNode.getParentWireId()).contains(wagonNode.getId())) {
+//					continue;
+//				}
+//
+//				Resources resources = findResourcesByCorrelationObjectId(resourceNode.getCorrelationObjectId());
+//
+//				if (resources == null || resources.getInternalPointer() == null
+//						|| "".equals(resources.getInternalPointer())) {
+//					continue;
+//				}
+//
+//				List<Artifacts> artifactsList = findArtifactsNodeByAndResourceNodeId(resourceNode,
+//						resources.getInternalId());
+//
+//				if (artifactsList == null || artifactsList.isEmpty()) {
+//					continue;
+//				}
+//				artifacstList.addAll(artifactsList);
+//				resources.setArtifacts(artifacstList.toArray(new Artifacts[artifacstList.size()]));
+//				resourcesList.add(resources);
+//
+//			}
+//			if (resourcesList == null || resourcesList.isEmpty()) {
+//				continue;
+//			}
+//			Resources[] resourcesArr = resourcesList.toArray(new Resources[resourcesList.size()]);
+//			wagon.setResources(resourcesArr);
+//			wagonsList.add(wagon);
+//		}
+//
+//		Wagons[] wagonsArr = wagonsList.toArray(new Wagons[wagonsList.size()]);
+//		train.setWagons(wagonsArr);
+//		train = saveTrainAsObj(train);
+//		return train;
+//
+//	}
+
 	private List<Artifacts> findAllArtifacts() {
 		List<Artifacts> result = new ArrayList<Artifacts>();
-		for(Artifacts artfct:artifactRepository.findAll()) {
+		for (Artifacts artfct : artifactRepository.findAll()) {
 			result.add(artfct);
 		}
 		return result;
@@ -1533,9 +1847,12 @@ public class ServiceFacade {
 
 	private List<Artifacts> findArtifactCorrelationObjectId(String correlationObjectId) {
 		List<Artifacts> result = new ArrayList<Artifacts>();
-		for(Artifacts artifact:artifactRepository.findAll()) {
-			String artifactId = artifact.get_id().get().toString().trim();
-			if(correlationObjectId.trim().equals(artifactId)) {
+		for (Artifacts artifact : artifactRepository.findAll()) {
+			String artifactId = artifact.get_id().toString().trim();
+			if (correlationObjectId.trim().equals(artifactId)) {
+				result.add(artifact);
+			}
+			if (result.isEmpty() && artifactId.equals(artifact.getCorrelationObjectId())) {
 				result.add(artifact);
 			}
 
@@ -1543,29 +1860,29 @@ public class ServiceFacade {
 		return result;
 	}
 
-	private List<ArtifactsMetadataNoderedNODE> findArtifactsNodeByAndResourceNodeId(String resourceNodeId) {
-//		List<ArtifactsMetadataNoderedNODE> result = artifactsRepositoryNode.findOneByQuery("correlationObjectId", correlationObjectId);
-//		return result;
-		List<ArtifactsMetadataNoderedNODE> result = new ArrayList<ArtifactsMetadataNoderedNODE>();
-		for(ArtifactsMetadataNoderedNODE artifactNode:artifactsRepositoryNode.findAll()) {
-			//if(internalId.equals(artifactNode.getCorrelationObjectId())){
-				for(String artifactParentId:artifactNode.getParentWireId()) {
-					if(artifactParentId.equals(resourceNodeId)) {
-						result.add(artifactNode);
-					}
+	private List<Artifacts> findArtifactsNodeByAndResourceNodeId(ResourcesMetadataNoderedNODE resourceNode,
+			String internalId) {
+
+		for (ArtifactsMetadataNoderedNODE artifactNode : artifactsRepositoryNode.findAll()) {
+			for (String resourceNodesWires : resourceNode.getWires()[0]) {
+
+				if (artifactNode.getInternalId().equals(internalId)
+						&& artifactNode.getId().equals(resourceNodesWires)) {
+					return findArtifactCorrelationObjectId(artifactNode.getCorrelationObjectId());
+
 				}
-				return result;
-			//}
+
+			}
 
 		}
-		
+
 		return null;
 	}
 
 	private WagonsMetadataNoderedNODE findNoderedMetadataWagonByCorrelationObjectId(String correlationObjectId) {
-		
-		for(WagonsMetadataNoderedNODE wagonNode:wagonRepositoryNode.findAll()) {
-			if(correlationObjectId.equals(wagonNode.getCorrelationObjectId())) {
+
+		for (WagonsMetadataNoderedNODE wagonNode : wagonRepositoryNode.findAll()) {
+			if (correlationObjectId.equals(wagonNode.getCorrelationObjectId())) {
 				return wagonNode;
 			}
 
@@ -1573,23 +1890,21 @@ public class ServiceFacade {
 		return null;
 	}
 
-	//TODO: The wagonNode.getParentWireId()[0] means that just one train per flow is possible.
+	// TODO: The wagonNode.getParentWireId()[0] means that just one train per flow
+	// is possible.
 	private WagonsMetadataNoderedNODE findNoderedMetadataWagonByTrainId(String internalId, String trainNodeId) {
 		List<WagonsMetadataNoderedNODE> wagonList = new ArrayList<WagonsMetadataNoderedNODE>();
-		
-		for(WagonsMetadataNoderedNODE wagonNode:wagonList) {
-			if(internalId.equals(wagonNode.getInternalId()) &&
-					wagonNode.getParentWireId()[0].equals(trainNodeId)) {
+
+		for (WagonsMetadataNoderedNODE wagonNode : wagonList) {
+			if (internalId.equals(wagonNode.getInternalId()) && wagonNode.getParentWireId()[0].equals(trainNodeId)) {
 				return wagonNode;
 			}
 		}
 		return null;
 	}
 
+	// ==Execute
 
-	
-	//==Execute
-	
 //	public Train wrapperTheTrainObjects(String internalId) {
 //		Train train = findFirstTrainByInternalId(internalId);
 //		TrainMetadataNoderedNODE trainNode = findFirstNoderedMetadataTrainByInternalId(internalId);
@@ -1618,9 +1933,5 @@ public class ServiceFacade {
 //		return train;
 //	}
 
-
-
-
-	
-	//==
+	// ==
 }

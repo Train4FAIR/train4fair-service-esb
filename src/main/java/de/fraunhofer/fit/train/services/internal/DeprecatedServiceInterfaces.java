@@ -179,124 +179,124 @@ public class DeprecatedServiceInterfaces {
     // TODO: [Important] Do the documentation =======================
     //@PostMapping(value = "train/add/artifact/train/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
     //!!!
-    Train addArtifact(@RequestBody String artifactStr, @PathVariable String trainId) throws Exception {
-
-        Gson gson = new Gson();
-        Artifacts artifacts = gson.fromJson(artifactStr, Artifacts.class);
-        artifacts.setResourceId(trainId);
-        artifacts.setInternalId(trainId);
-        artifacts = facade.saveArtifact(artifacts);
-        Train trainn = facade.findTrainByInternalId(trainId);
-
-        for (int i = 0; i < trainn.getWagons().length; i++) {
-            Wagons wagons = trainn.getWagons()[i];
-
-            if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
-                continue;
-            }
-            
-            System.out.println("==> "+trainn.getWagons()[i].getResources().length);
-
-            for (int j = 0; j < trainn.getWagons()[i].getResources().length; j++) {
-                Resources resources = trainn.getWagons()[i].getResources()[j];
-                
-//              System.out.println("============================");
-//              System.out.println("wagon: "+trainn.getWagons()[i].getName());
-//              System.out.println("resources: "+resources.getName());
-//              System.out.println("i == "+i+" j == "+j);
-//              System.out.println("============================");
-                if ((resources == null) || (!resources.getInternalId().equals(trainId))) {
-                    continue;
-                }
-                // ===========================================
-                System.out.println(((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0)));
-                System.out.println(resources.getArtifacts() == null || resources.getArtifacts().length == 0);
-                
-                if ((resources.getArtifacts() == null || resources.getArtifacts().length == 0) 
-                        && ((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0))) {
-                    
-                    //wagons.setResources(new Resources[] { resource });
-                    resources.setArtifacts(new Artifacts[] {artifacts});
-                    trainn.getWagons()[i].setResources(new Resources[] {resources});
-                    // ===========================================
-                    facade.saveWagon(trainn.getWagons()[i]);
-                    trainn = facade.saveTrainBasic(trainn);
-                    // ===========================================
-                    continue;
-
-                }
-                
-
-                
-//              if ((resources.getArtifacts() == null || resources.getArtifacts().length == 0) 
-//                      && ((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0))) {
-//                      System.out.println("i == "+i+" j == "+j);
-//                  resources.setArtifacts(new Artifacts[] { artifacts});
-//                  trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
-//                  // ===========================================
-//                  facade.saveResource(trainn.getWagons()[i].getResources()[j]);
-//                  System.out.println("obj: "+ trainn.getWagons()[i].getResources()[j]);
-//                  trainn = facade.saveTrainBasic(trainn);
-//                  // ===========================================
-//                  continue;
+//    Train addArtifact(@RequestBody String artifactStr, @PathVariable String trainId) throws Exception {
 //
-//              }
-
-//              List<Artifacts> artifactsList = new ArrayList<Artifacts>();
+//        Gson gson = new Gson();
+//        Artifacts artifacts = gson.fromJson(artifactStr, Artifacts.class);
+//        artifacts.setResourceId(trainId);
+//        //artifacts.setInternalId(trainId);
+//        artifacts = facade.saveArtifact(artifacts);
+//        Train trainn = facade.findTrainByInternalId(trainId);
 //
-//              if (resources.getArtifacts() != null && resources.getArtifacts().length > 0) {
-//                  artifactsList.addAll(Arrays.asList(resources.getArtifacts()));
-//                  artifactsList.add(artifacts);
-//                  // artifactsList.add(facade.getlandpage(trainId));
-//                  resources.setArtifacts(artifactsList.toArray(new Artifacts[artifactsList.size()]));
-//                  trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
-//                  // ===========================================
-//                  facade.saveResource(trainn.getWagons()[i].getResources()[j]);
-//                  trainn = facade.saveTrainBasic(trainn);
-//                  // ===========================================
-//                  continue;
-//              }
-
-                // ===========================================
-            }
-
-        }
-        Train result = facade.findTrainByInternalId(trainId);
-        return result;
-    }
+//        for (int i = 0; i < trainn.getWagons().length; i++) {
+//            Wagons wagons = trainn.getWagons()[i];
+//
+//            if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
+//                continue;
+//            }
+//            
+//            System.out.println("==> "+trainn.getWagons()[i].getResources().length);
+//
+//            for (int j = 0; j < trainn.getWagons()[i].getResources().length; j++) {
+//                Resources resources = trainn.getWagons()[i].getResources()[j];
+//                
+////              System.out.println("============================");
+////              System.out.println("wagon: "+trainn.getWagons()[i].getName());
+////              System.out.println("resources: "+resources.getName());
+////              System.out.println("i == "+i+" j == "+j);
+////              System.out.println("============================");
+//                if ((resources == null) || (!resources.getInternalId().equals(trainId))) {
+//                    continue;
+//                }
+//                // ===========================================
+//                System.out.println(((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0)));
+//                System.out.println(resources.getArtifacts() == null || resources.getArtifacts().length == 0);
+//                
+//                if ((resources.getArtifacts() == null || resources.getArtifacts().length == 0) 
+//                        && ((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0))) {
+//                    
+//                    //wagons.setResources(new Resources[] { resource });
+//                    resources.setArtifacts(new Artifacts[] {artifacts});
+//                    trainn.getWagons()[i].setResources(new Resources[] {resources});
+//                    // ===========================================
+//                    facade.saveWagon(trainn.getWagons()[i]);
+//                    trainn = facade.saveTrainBasic(trainn);
+//                    // ===========================================
+//                    continue;
+//
+//                }
+//                
+//
+//                
+////              if ((resources.getArtifacts() == null || resources.getArtifacts().length == 0) 
+////                      && ((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0))) {
+////                      System.out.println("i == "+i+" j == "+j);
+////                  resources.setArtifacts(new Artifacts[] { artifacts});
+////                  trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
+////                  // ===========================================
+////                  facade.saveResource(trainn.getWagons()[i].getResources()[j]);
+////                  System.out.println("obj: "+ trainn.getWagons()[i].getResources()[j]);
+////                  trainn = facade.saveTrainBasic(trainn);
+////                  // ===========================================
+////                  continue;
+////
+////              }
+//
+////              List<Artifacts> artifactsList = new ArrayList<Artifacts>();
+////
+////              if (resources.getArtifacts() != null && resources.getArtifacts().length > 0) {
+////                  artifactsList.addAll(Arrays.asList(resources.getArtifacts()));
+////                  artifactsList.add(artifacts);
+////                  // artifactsList.add(facade.getlandpage(trainId));
+////                  resources.setArtifacts(artifactsList.toArray(new Artifacts[artifactsList.size()]));
+////                  trainn.getWagons()[i].getResources()[j].setArtifacts(resources.getArtifacts());
+////                  // ===========================================
+////                  facade.saveResource(trainn.getWagons()[i].getResources()[j]);
+////                  trainn = facade.saveTrainBasic(trainn);
+////                  // ===========================================
+////                  continue;
+////              }
+//
+//                // ===========================================
+//            }
+//
+//        }
+//        Train result = facade.findTrainByInternalId(trainId);
+//        return result;
+//    }
     // ==================================================================
 
     // TODO: [Important] Do the documentation =======================
     //@PostMapping(value = "/train/add/resource/train/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
     //!!!
-    Resources addResource(@RequestBody String resourceStr, @PathVariable String trainId) throws Exception {
-
-        Gson gson = new Gson();
-        Resources resource = gson.fromJson(resourceStr, Resources.class);
-        resource.setWagonId(trainId);
-        resource.setInternalId(trainId);
-        resource = facade.saveResources(resource);
-        Train trainn = facade.findTrainByInternalId(trainId);
-
-        // ===========================================
-
-        for (int i = 0; i < trainn.getWagons().length; i++) {
-            Wagons wagons = trainn.getWagons()[i];
-
-            if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
-                continue;
-            }
-
-            if (wagons.getResources() == null || wagons.getResources().length == 0) {
-                wagons.setResources(new Resources[] { resource });
-                trainn.getWagons()[i].setResources(wagons.getResources());
-                // ===========================================
-                facade.saveWagon(trainn.getWagons()[i]);
-                facade.saveResource(resource);
-                trainn = facade.saveTrainBasic(trainn);
-                // ===========================================
-                continue;
-            }
+//    Resources addResource(@RequestBody String resourceStr, @PathVariable String trainId) throws Exception {
+//
+//        Gson gson = new Gson();
+//        Resources resource = gson.fromJson(resourceStr, Resources.class);
+//        resource.setWagonId(trainId);
+//        //resource.setInternalId(trainId);
+//        resource = facade.saveResources(resource);
+//        Train trainn = facade.findTrainByInternalId(trainId);
+//
+//        // ===========================================
+//
+//        for (int i = 0; i < trainn.getWagons().length; i++) {
+//            Wagons wagons = trainn.getWagons()[i];
+//
+//            if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
+//                continue;
+//            }
+//
+//            if (wagons.getResources() == null || wagons.getResources().length == 0) {
+//                wagons.setResources(new Resources[] { resource });
+//                trainn.getWagons()[i].setResources(wagons.getResources());
+//                // ===========================================
+//                facade.saveWagon(trainn.getWagons()[i]);
+//                facade.saveResource(resource);
+//                trainn = facade.saveTrainBasic(trainn);
+//                // ===========================================
+//                continue;
+//            }
 
 //          List<Resources> resourcesList = new ArrayList<Resources>();
 
@@ -312,37 +312,37 @@ public class DeprecatedServiceInterfaces {
 //              // ===========================================
 //              continue;
 //          }
-
-        }
-
-        return resource;
-    }
+//
+//        }
+//
+//        return resource;
+//    }
 
     // ==================================================================
 
     // TODO: [Important] Do the documentation =======================
     //@PostMapping(value = "/train/add/wagon/train/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
     //!!!
-    Wagons addWagon(@RequestBody String wagonStr, @PathVariable String trainId) throws Exception {
-        Gson gson = new Gson();
-        Wagons wagon = gson.fromJson(wagonStr, Wagons.class);
-
-        Train train = facade.findTrainByInternalId(trainId);
-        wagon.setTrainId(trainId);
-        if (wagon.getInternalId() != null) {
-            wagon.set_id(new ObjectId(wagon.getInternalId()));
-        }
-        wagon.setTrainId(trainId);
-        wagon.setInternalId(trainId);
-        wagon = facade.saveWagon(wagon);
-        Wagons[] wagonsArr = facade.findWagonsById(trainId);
-
-        train.setWagons(wagonsArr);
-
-        train = facade.saveTrainBasic(train);
-
-        return wagon;
-    }
+//    Wagons addWagon(@RequestBody String wagonStr, @PathVariable String trainId) throws Exception {
+//        Gson gson = new Gson();
+//        Wagons wagon = gson.fromJson(wagonStr, Wagons.class);
+//
+//        Train train = facade.findTrainByInternalId(trainId);
+//        wagon.setTrainId(trainId);
+//        if (wagon.getInternalId() != null) {
+//            wagon.set_id(new ObjectId(wagon.getInternalId()));
+//        }
+//        wagon.setTrainId(trainId);
+//        //wagon.setInternalId(trainId);
+//        wagon = facade.saveWagon(wagon);
+//        Wagons[] wagonsArr = facade.findWagonsById(trainId);
+//
+//        train.setWagons(wagonsArr);
+//
+//        train = facade.saveTrainBasic(train);
+//
+//        return wagon;
+//    }
     // ==================================================================
 
 
@@ -357,9 +357,9 @@ public class DeprecatedServiceInterfaces {
     }
 
     //@GetMapping(value = "/train/InternalVersion", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getInternalVersion() {
-        return facade.getInternalVersion();
-    }
+//    public String getInternalVersion() {
+//        return facade.getInternalVersion();
+//    }
 
     //@GetMapping(value = "/train/helper/ArchitectureEnumValues", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArchitectureOCIEnum> getArchitectureEnumValues() {

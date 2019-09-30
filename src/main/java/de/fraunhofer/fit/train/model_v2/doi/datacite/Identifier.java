@@ -23,6 +23,18 @@ public class Identifier {
 	@SerializedName("content")
 	@Expose
 	private String content;
+	
+	@SerializedName("providerURL")
+	@Expose
+	private String providerURL;
+	
+	@SerializedName("prefix")
+	@Expose
+	private String prefix;
+	
+	@SerializedName("suffix")
+	@Expose
+	private String  suffix;
 
 	public String getIdentifierType() {
 		return identifierType;
@@ -42,9 +54,30 @@ public class Identifier {
 		this.content = content;
 	}
 
-	@Override
-	public String toString() {
-		return "ClassPojo [identifierType = " + identifierType + ", content = " + content + "]";
+	public String getProviderURL() {
+		return providerURL;
 	}
 
+	public void setProviderURL(String providerURL) {
+		this.providerURL = providerURL;
+	}
+
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+
+	public String getSuffix() {
+		return suffix;
+	}
+
+	public void setSuffix(String suffix) {
+		this.suffix = suffix;
+	}
+
+
+	
 }

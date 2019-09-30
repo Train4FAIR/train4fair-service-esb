@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -12,6 +15,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -67,6 +74,63 @@ public class TrainWrapperTest {
 
 	private static final String INTERNAL_VERSION_ID_TEST = "5d85a4deca90827e9e05fc6b5d85a4deca90827e9e05fc6c_21.09.2019";
 
+//	private static final String WAGON_INTERNAL_ID = "5d9161609141a4193f92278f";
+//	
+//	private static final String WAGON_CORR_OBJ_ID = "5d9161689141a4193f922795";
+//	
+	
+	@Autowired private MongoOperations mongoOps;
+	
+	
+	@Test
+	public void findWagon() throws Exception {
+		Assert.assertNotNull(mongoOps);
+		Query query = new Query();
+		query.addCriteria(Criteria.where("correlationObjectId").is("5d916cc99141a41da602157f"))
+		.addCriteria(Criteria.where("internalId").is("5d916cc89141a41da602157b"));
+		
+		TrainMetadataNoderedNODE trainNode = null;
+		List<TrainMetadataNoderedNODE> trainList = mongoOps.find(query, TrainMetadataNoderedNODE.class);
+		if(!trainList.isEmpty()) {
+			trainNode = trainList.get(0);
+		}
+		
+		query = new Query();
+		query.addCriteria(Criteria.where("internalId").is("5d916cc89141a41da602157b")
+				.and("parentWireId").is("d2e2c769.548e18"));
+		List<WagonsMetadataNoderedNODE> wagonNodeList = mongoOps.find(query, WagonsMetadataNoderedNODE.class);
+		
+		List<Wagons> wagonsResultList = new ArrayList<Wagons>();
+
+		for(WagonsMetadataNoderedNODE wagonNode:wagonNodeList) {
+			query = new Query();
+			query.addCriteria(Criteria.where("internalId").is(wagonNode.getInternalId())
+					.and("correlationObjectId").is(wagonNode.getCorrelationObjectId()));
+			List<Wagons> wagonsList = mongoOps.find(query, Wagons.class);
+			wagonsResultList.addAll(wagonsList);
+		}
+		
+		System.out.println(wagonsResultList);
+	}
+	
+	@Ignore
+	@Test
+	public void findWagonByInternalAndCorrelationID() throws Exception {
+		Assert.assertNotNull(mongoOps);
+		Query query = new Query();
+		query.addCriteria(Criteria.where("correlationObjectId").is("5d9161689141a4193f922795"))
+		.addCriteria(Criteria.where("internalId").is("5d9161609141a4193f92278f"));
+		List<Wagons> wagons = mongoOps.find(query, Wagons.class);
+		if(!wagons.isEmpty()) {
+			System.out.println(wagons.get(0).get_id().toString());
+		}
+//		Assert.assertNotEquals(Collections.EMPTY_LIST,wagons);
+//		for(Wagons wagon:wagons) {
+//			System.out.println(wagon.get_id().toString());
+//		}
+	}
+	
+	@Ignore
 	@Test
 	public void nodeRedWorkFlowTest() throws Exception {
 

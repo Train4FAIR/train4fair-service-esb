@@ -3,7 +3,6 @@ package de.fraunhofer.fit.train.services.internal;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.Map;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -79,6 +77,8 @@ public class InternalServiceInterfaces {
     Train saveTrainAndDataciteFirstFlow(@RequestBody String trainStr, @PathVariable String trainId)
             throws NoSuchAlgorithmException, IOException {
         Train train = facade.saveTrain(trainStr);
+        train.setCorrelationObjectId(train.get_id().toString());
+        train = facade.saveTrainAsObj(train);
         return train;
     }
     
@@ -95,6 +95,12 @@ public class InternalServiceInterfaces {
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         Train train = gson.fromJson(input, Train.class);
         train = facade.saveTrainAsObj(train);
+        train.setCorrelationObjectId(train.get_id().toString());
+        train = facade.saveTrainAsObj(train);
+        
+        System.out.println("train.get_id().toString(): "+train.get_id().toString());
+        System.out.println("train.getInternalId(): "+train.getInternalId());
+        System.out.println("train.getCorrelationObjectId(): "+train.getCorrelationObjectId());
         return train;
     }
     
@@ -110,12 +116,10 @@ public class InternalServiceInterfaces {
         
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 		TrainMetadataNoderedNODE trainNode = gson.fromJson(input, TrainMetadataNoderedNODE.class);
-		trainNode.setInternalId(internalId);
+		//trainNode.setInternalId(internalId);
 		trainNode.set_wire(trainUtil.convertTwoDimensionsArrIntoStr(trainNode.getWires(),internalId));
-		trainNode.setInternalVersion(internalVersion);
+		//trainNode.setInternalVersion(internalVersion);
 		trainNode = facade.saveNoderedMetadataTrain(trainNode);
-		//System.out.println("trainNode => "+trainNode);
-        
     }
     //==
     
@@ -133,23 +137,33 @@ public class InternalServiceInterfaces {
         
 		Gson gson = new Gson();
 		Wagons wagon = gson.fromJson(input, Wagons.class);
-		wagon.setInternalId(internalId);
+		//wagon.setInternalId(internalId);
 		wagon.setTrainId(internalId);
-		System.out.println(wagon);
 		
+		//TODO: Create a Logging and Exception Framework to handler similar scenarios
 		if(wagon.getInternalPointer()==null || "".equals(wagon.getInternalPointer())) {
-			System.out.println("!!!====>>> "+wagon.getInternalId());
+			//throw new RuntimeException("failed to save the new Train. Probrably The Train Objects are Null or doesn't have any associated Resource.");
+			System.out.println("failed to save the new Train. Probrably The Train Objects are Null or doesn't have any associated Resource.");
 			return wagon;
 		}
 		
+		//TODO Review!!!
+//    	WagonsMetadataNoderedNODE[] wagonNodeArr = facade.findWagonNodeByInternalId(internalId);
+//		if(wagonNodeArr!=null || wagonNodeArr.length>0) {
+//			return wagon;
+//		}
+//		
+//		for(WagonsMetadataNoderedNODE wagonNode:wagonNodeArr) {
+//			System.out.println("wagonNode.getCorrelationObjectId(): "+wagonNode.getCorrelationObjectId());
+//			System.out.println("wagon.getCorrelationObjectId(): "+wagon.getCorrelationObjectId());
+//			
+//			System.out.println("wagonNode.getInternalId(): "+wagonNode.getInternalId());
+//			System.out.println("wagon.getInternalId(): "+wagonNode.getInternalId());
+//		}
 
-        
-    	WagonsMetadataNoderedNODE[] wagonNode = facade.findWagonNodeByInternalId(internalId);
-		if(wagonNode==null) {
-			return wagon;
-		}
-		
         Wagons wagons = facade.saveWagon(wagon);
+        wagons.setCorrelationObjectId(wagons.get_id().toString());
+        wagons = facade.saveWagon(wagon);
         return wagons;
     }
     
@@ -165,14 +179,13 @@ public class InternalServiceInterfaces {
         
 		Gson gson = new Gson();
 		WagonsMetadataNoderedNODE wagonNode = gson.fromJson(input, WagonsMetadataNoderedNODE.class);
-		wagonNode.setInternalId(internalId);
-		String internalPointer = trainUtil.convertTwoDimensionsArrIntoStr(wagonNode.getWires(),internalId);
-		wagonNode.setInternalPointer(internalPointer);
-		wagonNode.setInternalVersion(internalVersion);
+		//wagonNode.setInternalId(internalId);
+		//String internalPointer = trainUtil.convertTwoDimensionsArrIntoStr(wagonNode.getWires(),internalId);
+		//wagonNode.setInternalPointer(internalPointer);
+		//wagonNode.setInternalVersion(internalVersion);
 		
 		//TODO create an error message framework
 		if(wagonNode.getParentWireId()==null || wagonNode.getParentWireId().length==0) {
-			System.out.println("!!!====>>> "+wagonNode.getParentWireId());
 			return;
 		}
 		
@@ -195,10 +208,12 @@ public class InternalServiceInterfaces {
         
 		Gson gson = new Gson();
 		Resources resource = gson.fromJson(input, Resources.class);
-		resource.setInternalId(internalId);
+		//resource.setInternalId(internalId);
 		resource.setWagonId(internalId);
         
 		Resources result = facade.saveResource(resource);
+		result.setCorrelationObjectId(result.get_id().toString());
+		result = facade.saveResource(resource);
         return result;
     }
     
@@ -214,9 +229,9 @@ public class InternalServiceInterfaces {
         
 		Gson gson = new Gson();
 		ResourcesMetadataNoderedNODE resourceNode = gson.fromJson(input, ResourcesMetadataNoderedNODE.class);
-		resourceNode.setInternalId(internalId);
-		resourceNode.setInternalPointer(internalId);
-		resourceNode.setInternalVersion(internalVersion);
+		//resourceNode.setInternalId(internalId);
+		//resourceNode.setInternalPointer(internalId);
+		//resourceNode.setInternalVersion(internalVersion);
         facade.saveNoderedMetadataResources(resourceNode);
         
     }
@@ -224,7 +239,6 @@ public class InternalServiceInterfaces {
 
   //== Artifacts
     // TODO: [Important] Do the documentation =======================
-    @SuppressWarnings("unlikely-arg-type")
 	@PostMapping(value = "/artifact/add/{internalId}/", produces = MediaType.APPLICATION_JSON_VALUE)
     //!!!+
     Artifacts saveArtifacts(@RequestBody String input,  @PathVariable String internalId)
@@ -242,22 +256,12 @@ public class InternalServiceInterfaces {
         	return null;
         }
         
-//        for(int i=0;i<artifactsArr.length;i++) {
-//        	Artifacts artifact = artifactsArr[i];
-//        	if(artifact.getFilename()!=null && !"".equals(artifact.getFilename())&&
-//        			artifact.getFilename().equals(artifactInput)&&
-//        			artifact.getFiledata()!=null && !"".equals(artifact.getFiledata())&&
-//        					artifact.getFiledata().equals(artifactInput.getFiledata())){
-//        		return null;
-//        	}
-//        }
-
-        
-
-        artifactInput.setInternalId(internalId);
-        artifactInput.setResourceId(internalId);
+        //artifactInput.setInternalId(internalId);
+        //artifactInput.setResourceId(internalId);
         
 		Artifacts result = facade.saveArtifacts(artifactInput);
+		result.setCorrelationObjectId(result.get_id().toString());
+		result = facade.saveArtifacts(artifactInput);
         return result;
     }
     
@@ -273,9 +277,9 @@ public class InternalServiceInterfaces {
         
 		Gson gson = new Gson();
 		ArtifactsMetadataNoderedNODE artifactNode = gson.fromJson(input, ArtifactsMetadataNoderedNODE.class);
-		artifactNode.setInternalId(internalId);
-		artifactNode.setInternalPointer(internalId);
-		artifactNode.setInternalVersion(internalVersion);
+//		artifactNode.setInternalId(internalId);
+//		artifactNode.setInternalPointer(internalId);
+//		artifactNode.setInternalVersion(internalVersion);
         facade.saveNoderedMetadataArtifacts(artifactNode);
         
     }
@@ -296,7 +300,7 @@ public class InternalServiceInterfaces {
         Train train = facade.wrapperTheTrainObjects(internalId);
         train = facade.wrapperTheWagonObjects(internalId);
         train = facade.wrapperTheResourcesObjects(internalId);
-        train = facade.saveUpdateTrain(train);
+        //train = facade.saveUpdateTrain(train);
 
         return train;
     }
@@ -352,119 +356,118 @@ public class InternalServiceInterfaces {
 
     
     // TODO: [Important] Do the documentation =======================
-    @PostMapping(value = "train/add/artifact/train/{trainId}/", produces = MediaType.APPLICATION_JSON_VALUE)
+    //@PostMapping(value = "train/add/artifact/train/{trainId}/", produces = MediaType.APPLICATION_JSON_VALUE)
     //!!!
-    Train addArtifact(@RequestBody String artifactStr, @PathVariable String trainId) throws Exception {
-
-        Gson gson = new Gson();
-        Artifacts artifacts = gson.fromJson(artifactStr, Artifacts.class);
-        artifacts.setResourceId(trainId);
-        artifacts.setInternalId(trainId);
-        artifacts = facade.saveArtifact(artifacts);
-        Train trainn = facade.findTrainByInternalId(trainId);
-
-        for (int i = 0; i < trainn.getWagons().length; i++) {
-            Wagons wagons = trainn.getWagons()[i];
-
-            if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
-                continue;
-            }
-            
-            System.out.println("==> "+trainn.getWagons()[i].getResources().length);
-
-            for (int j = 0; j < trainn.getWagons()[i].getResources().length; j++) {
-                Resources resources = trainn.getWagons()[i].getResources()[j];
-                
-                if ((resources == null) || (!resources.getInternalId().equals(trainId))) {
-                    continue;
-                }
-                // ===========================================
-                System.out.println(((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0)));
-                System.out.println(resources.getArtifacts() == null || resources.getArtifacts().length == 0);
-                
-                if ((resources.getArtifacts() == null || resources.getArtifacts().length == 0) 
-                        && ((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0))) {
-                    
-                    //wagons.setResources(new Resources[] { resource });
-                    resources.setArtifacts(new Artifacts[] {artifacts});
-                    trainn.getWagons()[i].setResources(new Resources[] {resources});
-                    // ===========================================
-                    facade.saveWagon(trainn.getWagons()[i]);
-                    trainn = facade.saveTrainBasic(trainn);
-                    // ===========================================
-                    continue;
-
-                }
-
-            }
-
-        }
-        Train result = facade.findTrainByInternalId(trainId);
-        return result;
-    }
+//    Train addArtifact(@RequestBody String artifactStr, @PathVariable String trainId) throws Exception {
+//
+//        Gson gson = new Gson();
+//        Artifacts artifacts = gson.fromJson(artifactStr, Artifacts.class);
+//        artifacts.setResourceId(trainId);
+//        //artifacts.setInternalId(trainId);
+//        artifacts = facade.saveArtifact(artifacts);
+//        Train trainn = facade.findTrainByInternalId(trainId);
+//
+//        for (int i = 0; i < trainn.getWagons().length; i++) {
+//            Wagons wagons = trainn.getWagons()[i];
+//
+//            if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
+//                continue;
+//            }
+//            
+//            System.out.println("==> "+trainn.getWagons()[i].getResources().length);
+//
+//            for (int j = 0; j < trainn.getWagons()[i].getResources().length; j++) {
+//                Resources resources = trainn.getWagons()[i].getResources()[j];
+//                
+//                if ((resources == null) || (!resources.getInternalId().equals(trainId))) {
+//                    continue;
+//                }
+//                // ===========================================
+//                System.out.println(((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0)));
+//                System.out.println(resources.getArtifacts() == null || resources.getArtifacts().length == 0);
+//                
+//                if ((resources.getArtifacts() == null || resources.getArtifacts().length == 0) 
+//                        && ((i==0 && j==0) || (i==1 && j==0) || (i==2 && j==0))) {
+//                    
+//                    //wagons.setResources(new Resources[] { resource });
+//                    resources.setArtifacts(new Artifacts[] {artifacts});
+//                    trainn.getWagons()[i].setResources(new Resources[] {resources});
+//                    // ===========================================
+//                    facade.saveWagon(trainn.getWagons()[i]);
+//                    trainn = facade.saveTrainBasic(trainn);
+//                    // ===========================================
+//                    continue;
+//
+//                }
+//
+//            }
+//
+//        }
+//        Train result = facade.findTrainByInternalId(trainId);
+//        return result;
+//    }
 
     
     // TODO: [Important] Do the documentation =======================
-    @PostMapping(value = "/train/add/resource/train/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    //@PostMapping(value = "/train/add/resource/train/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
     //!!!
-    Resources addResource(@RequestBody String resourceStr, @PathVariable String trainId) throws Exception {
-
-        Gson gson = new Gson();
-        Resources resource = gson.fromJson(resourceStr, Resources.class);
-        resource.setWagonId(trainId);
-        resource.setInternalId(trainId);
-        resource = facade.saveResources(resource);
-        Train trainn = facade.findTrainByInternalId(trainId);
-
-        // ===========================================
-
-        for (int i = 0; i < trainn.getWagons().length; i++) {
-            Wagons wagons = trainn.getWagons()[i];
-
-            if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
-                continue;
-            }
-
-            if (wagons.getResources() == null || wagons.getResources().length == 0) {
-                wagons.setResources(new Resources[] { resource });
-                trainn.getWagons()[i].setResources(wagons.getResources());
-                // ===========================================
-                facade.saveWagon(trainn.getWagons()[i]);
-                facade.saveResource(resource);
-                trainn = facade.saveTrainBasic(trainn);
-                // ===========================================
-                continue;
-            }
-
-        }
-
-        return resource;
-    }
+//    Resources addResource(@RequestBody String resourceStr, @PathVariable String trainId) throws Exception {
+//
+//        Gson gson = new Gson();
+//        Resources resource = gson.fromJson(resourceStr, Resources.class);
+//        resource.setWagonId(trainId);
+//        //owroresource.setInternalId(trainId);
+//        resource = facade.saveResources(resource);
+//        Train trainn = facade.findTrainByInternalId(trainId);
+//
+//        // ===========================================
+//
+//        for (int i = 0; i < trainn.getWagons().length; i++) {
+//            Wagons wagons = trainn.getWagons()[i];
+//
+//            if ((wagons == null) || (!wagons.getInternalId().equals(trainId))) {
+//                continue;
+//            }
+//
+//            if (wagons.getResources() == null || wagons.getResources().length == 0) {
+//                wagons.setResources(new Resources[] { resource });
+//                trainn.getWagons()[i].setResources(wagons.getResources());
+//                // ===========================================
+//                facade.saveWagon(trainn.getWagons()[i]);
+//                facade.saveResource(resource);
+//                trainn = facade.saveTrainBasic(trainn);
+//                // ===========================================
+//                continue;
+//            }
+//
+//        }
+//
+//        return resource;
+//    }
 
 
     // TODO: [Important] Do the documentation =======================
-    @PostMapping(value = "/train/add/wagon/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    //!!!
-    Wagons addWagon(@RequestBody String wagonStr, @PathVariable String trainId) throws Exception {
-        Gson gson = new Gson();
-        Wagons wagon = gson.fromJson(wagonStr, Wagons.class);
-
-        Train train = facade.findTrainByInternalId(trainId);
-        wagon.setTrainId(trainId);
-        if (wagon.getInternalId() != null) {
-            wagon.set_id(new ObjectId(wagon.getInternalId()));
-        }
-        wagon.setTrainId(trainId);
-        wagon.setInternalId(trainId);
-        wagon = facade.saveWagon(wagon);
-        Wagons[] wagonsArr = facade.findWagonsById(trainId);
-
-        train.setWagons(wagonsArr);
-
-        train = facade.saveTrainBasic(train);
-
-        return wagon;
-    }
+//    @PostMapping(value = "/train/add/wagon/{trainId}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    Wagons addWagon(@RequestBody String wagonStr, @PathVariable String trainId) throws Exception {
+//        Gson gson = new Gson();
+//        Wagons wagon = gson.fromJson(wagonStr, Wagons.class);
+//
+//        Train train = facade.findTrainByInternalId(trainId);
+//        wagon.setTrainId(trainId);
+//        if (wagon.getInternalId() != null) {
+//            wagon.set_id(new ObjectId(wagon.getInternalId()));
+//        }
+//        wagon.setTrainId(trainId);
+//        //wagon.setInternalId(trainId);
+//        wagon = facade.saveWagon(wagon);
+//        Wagons[] wagonsArr = facade.findWagonsById(trainId);
+//
+//        train.setWagons(wagonsArr);
+//
+//        train = facade.saveTrainBasic(train);
+//
+//        return wagon;
+//    }
     // ==================================================================
 
 
@@ -478,7 +481,7 @@ public class InternalServiceInterfaces {
         return facade.getInternalPointer();
     }
 
-    @GetMapping(value = "/train/InternalVersion", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/train/InternalVersion/", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getInternalVersion() {
         return facade.getInternalVersion();
     }

@@ -1,6 +1,5 @@
 package de.fraunhofer.fit.train.boot;
 
-
 import java.io.IOException;
 
 import org.json.JSONObject;
@@ -18,53 +17,50 @@ import org.springframework.core.env.Environment;
 
 import de.fraunhofer.fit.train.servicelocator.TrainServiceLocator;
 
-
-
-@ComponentScan({"de.fraunhofer.fit.train"})
+@ComponentScan({ "de.fraunhofer.fit.train" })
 @EntityScan("de.fraunhofer.fit.train")
 @SpringBootApplication(exclude = MongoAutoConfiguration.class)
 public class Application extends SpringBootServletInitializer {
-	
 
-	
-	  @Autowired
-	  private Environment env;
+	@Autowired
+	private Environment env;
 
-	  @Autowired 
-	  private TrainServiceLocator trainServiceLocator;
-	
-    public static void main(String[] args) throws Exception
-    {
-        SpringApplication.run(Application.class, args);
-    }
-    
-    @Bean
-    public UndertowServletWebServerFactory embeddedServletContainerFactory() {
-    	UndertowServletWebServerFactory factory = 
-          new UndertowServletWebServerFactory();
-         
-        factory.addBuilderCustomizers(new UndertowBuilderCustomizer() {
-            @Override
-            public void customize(io.undertow.Undertow.Builder builder) {
-        		String name = env.getProperty("env.ms.name");
-        		String type = env.getProperty("env.ms.type");
-        		String token = env.getProperty("env.ms.token");
-        		
-        		JSONObject env;
-        		try {
-        			env = trainServiceLocator.locateEnvironment(name,type,token);
-        			builder.addHttpListener(Integer.parseInt(env.getString("port")), env.getString("host"));
-        			//return new MongoClient(env.getString("host"), Integer.parseInt(env.getString("port")));
-        		} catch (IOException e) {
-        			throw new RuntimeException("Error reading the db properties through service locator on AppConfig class",e);
-        		}
-                
-            }
-        });
-         
-        return factory;
-    }
-    
+	@Autowired
+	private TrainServiceLocator trainServiceLocator;
+
+	public static void main(String[] args) throws Exception {
+		System.getProperties().put( "server.port", 8181 );
+		SpringApplication.run(Application.class, args);
+	}
+
+	@Bean
+	public UndertowServletWebServerFactory embeddedServletContainerFactory() {
+		UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory();
+
+		factory.addBuilderCustomizers(new UndertowBuilderCustomizer() {
+			@Override
+			public void customize(io.undertow.Undertow.Builder builder) {
+				String name = env.getProperty("env.ms.name");
+				String type = env.getProperty("env.ms.type");
+				String token = env.getProperty("env.ms.token");
+
+				JSONObject env;
+				try {
+					env = trainServiceLocator.locateEnvironment(name, type, token);
+					builder.addHttpListener(Integer.parseInt(env.getString("port")), env.getString("host"));
+					// return new MongoClient(env.getString("host"),
+					// Integer.parseInt(env.getString("port")));
+				} catch (IOException e) {
+					throw new RuntimeException(
+							"Error reading the db properties through service locator on AppConfig class", e);
+				}
+
+			}
+		});
+
+		return factory;
+	}
+
 //    @Bean
 //    public void servletContainer() throws LifecycleException  {
 //    	
@@ -91,4 +87,3 @@ public class Application extends SpringBootServletInitializer {
 //        
 //    }
 }
-
