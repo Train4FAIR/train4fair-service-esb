@@ -3,5 +3,5 @@ server:
     context-path: /RepositoryService
     
 #desenv    
-port: 9092
-address: 127.0.0.1
+#port: 9092
+#address: 127.0.0.1
