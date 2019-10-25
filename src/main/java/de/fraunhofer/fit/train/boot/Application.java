@@ -29,7 +29,7 @@ public class Application extends SpringBootServletInitializer {
 	private TrainServiceLocator trainServiceLocator;
 
 	public static void main(String[] args) throws Exception {
-		System.getProperties().put( "server.port", 8181 );
+		//System.getProperties().put( "server.port", 8181 );
 		SpringApplication.run(Application.class, args);
 	}
 
