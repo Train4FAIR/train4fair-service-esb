@@ -18,7 +18,7 @@ echo load_db $load_db
 echo '========================================'
 
 cd /app/train-microservices-esb
-mvn install -DskipTests
+mvn clean install -Dgib.enabled=false -DskipTests
 mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=$server_port,--server.address=$server_address,--mongo.host=$mongo_host,--mongo.port=$mongo_port,--spring.data.mongodb.host=$mongo_host,--spring.data.mongodb.port=$mongo_port,--spring.data.mongodb.database=$mongo_db_name,--app_env=$app_env,--load_db=$load_db,--srv_loc_protocol=$srv_loc_protocol,--srv_loc_host=$srv_loc_host,--srv_loc_port=$srv_loc_port,--srv_loc_app_ctx=$srv_loc_app_ctx,--srv_loc_rest_ctx=$srv_loc_rest_ctx,--env_db_name=$env_db_name,--env_db_type=$env_db_type,--env_db_token=$env_db_token,--env_ms_name=$env_ms_name,--env_ms_type=$env_ms_type,--env_ms_token=$env_ms_token,--env_dav_name=$env_dav_name,--env_dav_type=$env_dav_type,--env_dav_token=$env_dav_token
 
 #cd /app/train-microservices-esb && mvn install -DskipTests && mvn spring-boot:run -Dserver.address=0.0.0.0 -Dserver.port=9091

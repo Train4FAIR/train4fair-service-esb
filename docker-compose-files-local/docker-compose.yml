@@ -20,7 +20,7 @@ services:
     
 # APP  ***************************************************************************************
   esb: 
-    image: jbjares/train-model-service:${ESB_TAG}
+    image: jbjares/train-microservices-esb:${ESB_TAG}
     environment:
     - username=$USERNAME
     - server_port=$SERVER_PORT

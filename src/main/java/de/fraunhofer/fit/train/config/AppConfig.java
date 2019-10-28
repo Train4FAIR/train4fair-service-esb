@@ -49,11 +49,20 @@ public class AppConfig extends AbstractMongoConfiguration {
 		String name = serviceLocatorEnvProperties.getEnvDbName();
 		String type = serviceLocatorEnvProperties.getEnvDbType();
 		String token = serviceLocatorEnvProperties.getEnvDBToken();
+		
+		System.out.println("getEnvDbName: "+name);
+		System.out.println("getEnvDbType: "+type);
+		System.out.println("getEnvDBToken: "+token);
 
 		JSONObject env;
 		try {
 			env = trainServiceLocator.locateEnvironment(name, type, token);
-			return new MongoClient(env.getString("host"), Integer.parseInt(env.getString("port")));
+			int port = Integer.parseInt(env.getString("port"));
+			String host = env.getString("host");
+			
+			System.out.println("mongo host: "+host);
+			System.out.println("mongo port: "+port);
+			return new MongoClient(host,port);
 		} catch (IOException e) {
 			throw new RuntimeException("Error reading the db properties through service locator on AppConfig class");
 		}
