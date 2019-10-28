@@ -9,36 +9,44 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.support.StandardServletEnvironment;
 
+import de.fraunhofer.fit.train.properties.ServiceLocatorEnvProperties;
 import de.fraunhofer.fit.train.util.PropertiesUtil;
 
 @EnableAspectJAutoProxy
 @Service
 public class TrainServiceLocator {
 	
-	//TODO remove it
-	//private static final String SERVICE_DISCOVERY_URL = "http://menzel.informatik.rwth-aachen.de:8881/ServiceDiscovery/train/service/discovery";
-
+	
+	@Autowired ServiceLocatorEnvProperties serviceLocatorEnvProperties;
+	
 	public JSONObject locateEnvironment(String env,String type, String token) throws IOException {
 		
-		
-		//String url = SERVICE_DISCOVERY_URL+"/"+env+"/"+type+"/"+token;
 		StringBuilder urlsb = new StringBuilder();
 		
-		urlsb.append(PropertiesUtil.getPropertyFromFile(null,"env.servicediscovery.protocol"));
-		urlsb.append(PropertiesUtil.getPropertyFromFile(null,"env.servicediscovery.host"));
+		System.out.println("===> "+serviceLocatorEnvProperties.getHost());
+		urlsb.append(serviceLocatorEnvProperties.getProtocol());
+		urlsb.append(serviceLocatorEnvProperties.getHost());
 		urlsb.append(":");
-		urlsb.append(PropertiesUtil.getPropertyFromFile(null,"env.servicediscovery.port"));
-		urlsb.append(PropertiesUtil.getPropertyFromFile(null,"env.servicelocator.app.context"));
-		urlsb.append(PropertiesUtil.getPropertyFromFile(null,"env.servicediscovery.service.context"));
+		urlsb.append(serviceLocatorEnvProperties.getPort());
+		urlsb.append(serviceLocatorEnvProperties.getAppContext());
+		urlsb.append(serviceLocatorEnvProperties.getServiceContext());
 		urlsb.append("/");
 		urlsb.append(env);
 		urlsb.append("/");
 		urlsb.append(type);
 		urlsb.append("/");
 		urlsb.append(token);
+		System.out.println("===> urlsb"+urlsb.toString());
 		StringBuilder sb = new StringBuilder();
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(urlsb.toString());

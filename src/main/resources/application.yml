@@ -1,7 +1,5 @@
 server:
   servlet:
-    context-path: /RepositoryService
-    
-#desenv    
-    port: 9092
-    address: 127.0.0.1
+    context-path: /RepositoryService   
+    port: 9091
+    address: 127.0..0.1

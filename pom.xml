@@ -6,6 +6,9 @@
 	<artifactId>TrainModel</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
+
+
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -224,6 +227,10 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>spring-releases</id>
+			<url>https://repo.spring.io/libs-release</url>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -242,6 +249,10 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>spring-releases</id>
+			<url>https://repo.spring.io/libs-release</url>
 		</pluginRepository>
 	</pluginRepositories>
 

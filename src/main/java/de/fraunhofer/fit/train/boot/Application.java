@@ -13,8 +13,8 @@ import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFa
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.core.env.Environment;
 
+import de.fraunhofer.fit.train.properties.ServiceLocatorEnvProperties;
 import de.fraunhofer.fit.train.servicelocator.TrainServiceLocator;
 
 @ComponentScan({ "de.fraunhofer.fit.train" })
@@ -23,13 +23,13 @@ import de.fraunhofer.fit.train.servicelocator.TrainServiceLocator;
 public class Application extends SpringBootServletInitializer {
 
 	@Autowired
-	private Environment env;
+	ServiceLocatorEnvProperties serviceLocatorEnvProperties;
 
 	@Autowired
 	private TrainServiceLocator trainServiceLocator;
 
 	public static void main(String[] args) throws Exception {
-		//System.getProperties().put( "server.port", 8181 );
+		// System.getProperties().put( "server.port", 9091 );
 		SpringApplication.run(Application.class, args);
 	}
 
@@ -40,16 +40,33 @@ public class Application extends SpringBootServletInitializer {
 		factory.addBuilderCustomizers(new UndertowBuilderCustomizer() {
 			@Override
 			public void customize(io.undertow.Undertow.Builder builder) {
-				String name = env.getProperty("env.ms.name");
-				String type = env.getProperty("env.ms.type");
-				String token = env.getProperty("env.ms.token");
+//				String name = env.getProperty("env.ms.name");
+//				String type = env.getProperty("env.ms.type");
+//				String token = env.getProperty("env.ms.token");
+
+				String name = serviceLocatorEnvProperties.getEnvMsName();
+				String type = serviceLocatorEnvProperties.getEnvMsType();
+				String token = serviceLocatorEnvProperties.getEnvMsToken();
+
+				System.out.println("getEnvMsName: " + name);
+				System.out.println("getEnvMsType: " + type);
+				System.out.println("getEnvMsToken: " + token);
 
 				JSONObject env;
 				try {
 					env = trainServiceLocator.locateEnvironment(name, type, token);
-					builder.addHttpListener(Integer.parseInt(env.getString("port")), env.getString("host"));
-					// return new MongoClient(env.getString("host"),
-					// Integer.parseInt(env.getString("port")));
+
+					System.out.println("===> name: " + name);
+					System.out.println("===> type: " + type);
+					System.out.println("===> token: " + token);
+
+					int port = Integer.parseInt(env.getString("port"));
+					String host = env.getString("host");
+
+					System.out.println("===> host: " + host);
+					System.out.println("===> port: " + port);
+
+					builder.addHttpListener(port, host);
 				} catch (IOException e) {
 					throw new RuntimeException(
 							"Error reading the db properties through service locator on AppConfig class", e);
@@ -61,29 +78,4 @@ public class Application extends SpringBootServletInitializer {
 		return factory;
 	}
 
-//    @Bean
-//    public void servletContainer() throws LifecycleException  {
-//    	
-//    	/**
-//    	 * server:
-//  servlet:
-//    context-path: /RepositoryService
-//  port: 9091
-//  address: 0.0.0.0
-//    	 */
-//    	
-//    	TomcatServletWebServerFactory tomcatContainerFactory
-//        = new TomcatServletWebServerFactory();
-//    	
-//    	
-//        
-////        Tomcat tomcat = new Tomcat();
-////        tomcat.setPort(9990);
-////        StandardHost host = new StandardHost();
-////        //host.setAppBase();
-////        tomcat.setHostname("127.0.0.1");
-////        tomcat.setHost(host);
-////        tomcat.start();
-//        
-//    }
 }
