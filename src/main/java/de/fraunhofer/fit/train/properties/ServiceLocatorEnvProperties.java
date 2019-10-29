@@ -60,10 +60,10 @@ public class ServiceLocatorEnvProperties {
 	@Value("${env_dav_token}")
 	private String envDavToken;
 	
-	@Value("${server_address}")
+	@Value("${esb_server_address}")
 	private String esbServerHost;
 	
-	@Value("${server_port}")
+	@Value("${esb_server_port}")
 	private String esbServerPort;
 	
 	
