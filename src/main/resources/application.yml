@@ -2,4 +2,4 @@ server:
   servlet:
     context-path: /RepositoryService   
     port: 9091
-    address: 127.0..0.1
+    address: 127.0.0.0.1

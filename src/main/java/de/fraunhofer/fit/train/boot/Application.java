@@ -1,11 +1,9 @@
 package de.fraunhofer.fit.train.boot;
 
-import java.io.IOException;
-
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.web.embedded.undertow.UndertowBuilderCustomizer;
@@ -15,11 +13,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
 import de.fraunhofer.fit.train.properties.ServiceLocatorEnvProperties;
-import de.fraunhofer.fit.train.servicelocator.TrainServiceLocator;
 
 @ComponentScan({ "de.fraunhofer.fit.train" })
 @EntityScan("de.fraunhofer.fit.train")
-@SpringBootApplication(exclude = MongoAutoConfiguration.class)
+@SpringBootApplication(exclude = { MongoAutoConfiguration.class, MongoDataAutoConfiguration.class })
 public class Application extends SpringBootServletInitializer {
 
 	@Autowired
