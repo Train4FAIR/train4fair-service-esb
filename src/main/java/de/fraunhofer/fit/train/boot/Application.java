@@ -19,60 +19,46 @@ import de.fraunhofer.fit.train.properties.ServiceLocatorEnvProperties;
 @SpringBootApplication(exclude = { MongoAutoConfiguration.class, MongoDataAutoConfiguration.class })
 public class Application extends SpringBootServletInitializer {
 
-	@Autowired
-	ServiceLocatorEnvProperties serviceLocatorEnvProperties;
+//	@Autowired
+//	ServiceLocatorEnvProperties serviceLocatorEnvProperties;
 
 //	@Autowired
 //	private TrainServiceLocator trainServiceLocator;
 
 	public static void main(String[] args) throws Exception {
-		// System.getProperties().put( "server.port", 9091 );
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Bean
-	public UndertowServletWebServerFactory embeddedServletContainerFactory() {
-		UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory();
-
-		factory.addBuilderCustomizers(new UndertowBuilderCustomizer() {
-			@Override
-			public void customize(io.undertow.Undertow.Builder builder) {
-//				String name = env.getProperty("env.ms.name");
-//				String type = env.getProperty("env.ms.type");
-//				String token = env.getProperty("env.ms.token");
-
-				String name = serviceLocatorEnvProperties.getEnvMsName();
-				String type = serviceLocatorEnvProperties.getEnvMsType();
-				String token = serviceLocatorEnvProperties.getEnvMsToken();
-
-				System.out.println("getEnvMsName: " + name);
-				System.out.println("getEnvMsType: " + type);
-				System.out.println("getEnvMsToken: " + token);
-
-//				JSONObject env;
-//				try {
-//					env = trainServiceLocator.locateEnvironment(name, type, token);
-
-//					System.out.println("===> name: " + name);
-//					System.out.println("===> type: " + type);
-//					System.out.println("===> token: " + token);
-
-					int port = Integer.parseInt(serviceLocatorEnvProperties.getEsbServerPort());
-					String host = serviceLocatorEnvProperties.getEsbServerHost();
-
-					System.out.println("===> host: " + host);
-					System.out.println("===> port: " + port);
-
-					builder.addHttpListener(port, host);
-//				} catch (IOException e) {
-//					throw new RuntimeException(
-//							"Error reading the db properties through service locator on AppConfig class", e);
-//				}
-
-			}
-		});
-
-		return factory;
-	}
+//	@Bean
+//	public UndertowServletWebServerFactory embeddedServletContainerFactory() {
+//		UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory();
+//
+//		factory.addBuilderCustomizers(new UndertowBuilderCustomizer() {
+//			@Override
+//			public void customize(io.undertow.Undertow.Builder builder) {
+//
+//
+//				String name = serviceLocatorEnvProperties.getEnvMsName();
+//				String type = serviceLocatorEnvProperties.getEnvMsType();
+//				String token = serviceLocatorEnvProperties.getEnvMsToken();
+//
+//				System.out.println("getEnvMsName: " + name);
+//				System.out.println("getEnvMsType: " + type);
+//				System.out.println("getEnvMsToken: " + token);
+//
+//
+//				int port = Integer.parseInt(serviceLocatorEnvProperties.getEsbServerPort());
+//				String host = serviceLocatorEnvProperties.getEsbServerHost();
+//
+//				System.out.println("===> host: " + host);
+//				System.out.println("===> port: " + port);
+//
+//				builder.addHttpListener(port, host);
+//
+//			}
+//		});
+//
+//		return factory;
+//	}
 
 }

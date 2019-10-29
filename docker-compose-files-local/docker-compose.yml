@@ -13,9 +13,10 @@ services:
       - /app/train-esb-data/db:/data/db
     networks:
       - esb_container_network
-    ports:
-        - $MONGO_PORT:27017
-    command: --bind_ip_all --port $MONGO_PORT --ipv6 
+    #ports:
+        #- $MONGO_PORT:$MONGO_PORT
+    #command: --bind_ip_all --port $MONGO_PORT --ipv6 
+    command: mongod --smallfiles --logpath=/dev/null # --quiet
 
     
 # APP  ***************************************************************************************
@@ -46,16 +47,17 @@ services:
     - load_db=$LOAD_DB
     - esb_tag=$ESB_TAG
     ports:
-    - $SERVER_PORT:9091
+    - $SERVER_PORT:$SERVER_PORT
     links:
     - mongoesb
-    depends_on:
-    - mongoesb
+    #depends_on:
+    #- mongoesb
     volumes:
      - "/app/train-esb-docker/:/app/train-esb-docker/"
     networks:
      - esb_container_network
-    command: ["/app/train-esb-docker/wait-for-it.sh", "$MONGO_HOST:$MONGO_PORT","--timeout=60","--","/app/train-esb-docker/entrypoint.sh"]
+    #command: ["/app/train-esb-docker/wait-for-it.sh", "$MONGO_HOST:$MONGO_PORT","--timeout=60","--","/app/train-esb-docker/entrypoint.sh"]
+    command: bash -c "/app/train-esb-docker/entrypoint.sh"
 
 networks:
     esb_container_network:
