@@ -25,8 +25,8 @@ public class Application extends SpringBootServletInitializer {
 	@Autowired
 	ServiceLocatorEnvProperties serviceLocatorEnvProperties;
 
-	@Autowired
-	private TrainServiceLocator trainServiceLocator;
+//	@Autowired
+//	private TrainServiceLocator trainServiceLocator;
 
 	public static void main(String[] args) throws Exception {
 		// System.getProperties().put( "server.port", 9091 );
@@ -52,25 +52,25 @@ public class Application extends SpringBootServletInitializer {
 				System.out.println("getEnvMsType: " + type);
 				System.out.println("getEnvMsToken: " + token);
 
-				JSONObject env;
-				try {
-					env = trainServiceLocator.locateEnvironment(name, type, token);
+//				JSONObject env;
+//				try {
+//					env = trainServiceLocator.locateEnvironment(name, type, token);
 
-					System.out.println("===> name: " + name);
-					System.out.println("===> type: " + type);
-					System.out.println("===> token: " + token);
+//					System.out.println("===> name: " + name);
+//					System.out.println("===> type: " + type);
+//					System.out.println("===> token: " + token);
 
-					int port = Integer.parseInt(env.getString("port"));
-					String host = env.getString("host");
+					int port = Integer.parseInt(serviceLocatorEnvProperties.getEsbServerPort());
+					String host = serviceLocatorEnvProperties.getEsbServerHost();
 
 					System.out.println("===> host: " + host);
 					System.out.println("===> port: " + port);
 
 					builder.addHttpListener(port, host);
-				} catch (IOException e) {
-					throw new RuntimeException(
-							"Error reading the db properties through service locator on AppConfig class", e);
-				}
+//				} catch (IOException e) {
+//					throw new RuntimeException(
+//							"Error reading the db properties through service locator on AppConfig class", e);
+//				}
 
 			}
 		});
