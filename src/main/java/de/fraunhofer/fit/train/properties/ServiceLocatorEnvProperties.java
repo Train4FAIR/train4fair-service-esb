@@ -65,11 +65,34 @@ public class ServiceLocatorEnvProperties {
 	
 	@Value("${server_port}")
 	private String esbServerPort;
+	
+	
+	@Value("${mongo_host}")
+	private String esbDBHost;
+	
+	@Value("${mongo_port}")
+	private String esbDBPort;
 
 
 	
 	
 	
+	public String getEsbDBHost() {
+		return esbDBHost;
+	}
+
+	public void setEsbDBHost(String esbDBHost) {
+		this.esbDBHost = esbDBHost;
+	}
+
+	public String getEsbDBPort() {
+		return esbDBPort;
+	}
+
+	public void setEsbDBPort(String esbDBPort) {
+		this.esbDBPort = esbDBPort;
+	}
+
 	public String getEsbServerHost() {
 		return esbServerHost;
 	}

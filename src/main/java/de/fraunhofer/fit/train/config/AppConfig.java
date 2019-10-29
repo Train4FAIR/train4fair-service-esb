@@ -26,8 +26,8 @@ public class AppConfig extends AbstractMongoConfiguration {
 	@Autowired
 	ServiceLocatorEnvProperties serviceLocatorEnvProperties;
 
-	@Autowired
-	TrainServiceLocator trainServiceLocator;
+//	@Autowired
+//	TrainServiceLocator trainServiceLocator;
 
 	@Override
 	protected String getDatabaseName() {
@@ -54,18 +54,18 @@ public class AppConfig extends AbstractMongoConfiguration {
 		System.out.println("getEnvDbType: "+type);
 		System.out.println("getEnvDBToken: "+token);
 
-		JSONObject env;
-		try {
-			env = trainServiceLocator.locateEnvironment(name, type, token);
-			int port = Integer.parseInt(env.getString("port"));
-			String host = env.getString("host");
+//		JSONObject env;
+//		try {
+//			env = trainServiceLocator.locateEnvironment(name, type, token);
+			int port = Integer.parseInt(serviceLocatorEnvProperties.getEsbDBPort());
+			String host = serviceLocatorEnvProperties.getEsbDBHost();
 			
 			System.out.println("mongo host: "+host);
 			System.out.println("mongo port: "+port);
 			return new MongoClient(host,port);
-		} catch (IOException e) {
-			throw new RuntimeException("Error reading the db properties through service locator on AppConfig class");
-		}
+//		} catch (IOException e) {
+//			throw new RuntimeException("Error reading the db properties through service locator on AppConfig class");
+//		}
 
 	}
 
