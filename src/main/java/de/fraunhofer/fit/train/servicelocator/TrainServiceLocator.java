@@ -46,7 +46,7 @@ public class TrainServiceLocator {
 		urlsb.append(type);
 		urlsb.append("/");
 		urlsb.append(token);
-		System.out.println("===> urlsb"+urlsb.toString());
+		System.out.println("===> url_srv_loc: "+urlsb.toString());
 		StringBuilder sb = new StringBuilder();
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(urlsb.toString());

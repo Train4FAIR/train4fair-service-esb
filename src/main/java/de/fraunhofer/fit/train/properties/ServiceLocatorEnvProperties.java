@@ -59,10 +59,33 @@ public class ServiceLocatorEnvProperties {
 	
 	@Value("${env_dav_token}")
 	private String envDavToken;
+	
+	@Value("${server_address}")
+	private String esbServerHost;
+	
+	@Value("${server_port}")
+	private String esbServerPort;
+
 
 	
 	
 	
+	public String getEsbServerHost() {
+		return esbServerHost;
+	}
+
+	public void setEsbServerHost(String esbServerHost) {
+		this.esbServerHost = esbServerHost;
+	}
+
+	public String getEsbServerPort() {
+		return esbServerPort;
+	}
+
+	public void setEsbServerPort(String esbServerPort) {
+		this.esbServerPort = esbServerPort;
+	}
+
 	public String getProtocol() {
 		return protocol;
 	}
