@@ -1,0 +1,102 @@
+{
+	"DEVenvironmentProperties": {
+		"env": "DEV",
+		"microservicesPropertiesDEVModel": {
+			"host": "0.0.0.0",
+			"port": "9091",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"mongoMicroservicesPropertiesDEVModel": {
+			"host": "cloud41.dbis.rwth-aachen.de",
+			"port": "27017",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"trainModellingToolPropertiesDEVModel": {
+			"host": "127.0.0.1",
+			"port": "1880",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"trainNodesPropertiesDEVModel": {
+			"host": "127.0.0.1",
+			"port": "1880",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"webdavMicroServicesPropertiesDEVModel": {
+			"host": "127.0.0.1",
+			"port": "9999",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		}
+	},
+	"TESTenvironmentProperties": {
+		"env": "TEST",
+		"microservicesPropertiesTESTModel": {
+			"host": "127.0.0.1",
+			"port": "9091",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"mongoMicroservicesPropertiesTESTModel": {
+			"host": "127.0.0.1",
+			"port": "27017",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"trainModellingToolPropertiesTESTModel": {
+			"host": "127.0.0.1",
+			"port": "1880",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"trainNodesPropertiesTESTModel": {
+			"host": "127.0.0.1",
+			"port": "1880",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"webdavMicroServicesPropertiesTESTModel": {
+			"host": "127.0.0.1",
+			"port": "9999",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		}
+	},
+	"PRODenvironmentProperties": {
+		"env": "PROD",
+		"microservicesPropertiesPRODModel": {
+			"host": "127.0.0.1",
+			"port": "9091",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"mongoMicroservicesPropertiesPRODModel": {
+			"host": "127.0.0.1",
+			"port": "27017",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"trainModellingToolPropertiesPRODModel": {
+			"host": "127.0.0.1",
+			"port": "1880",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"trainNodesPropertiesPRODModel": {
+			"host": "127.0.0.1",
+			"port": "1880",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		},
+		"webdavMicroServicesPropertiesPRODModel": {
+			"host": "127.0.0.1",
+			"port": "9999",
+			"user": "admin",
+			"pass": "21232f297a57a5a743894a0e4a801fc3"
+		}
+	},
+	"_class": "de.fraunhofer.fit.train.model.EnvironmentProperties""de.fraunhofer.fit.train.model.EnvironmentProperties"
+    }

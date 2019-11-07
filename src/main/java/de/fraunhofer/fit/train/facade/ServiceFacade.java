@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -81,6 +82,7 @@ import de.fraunhofer.fit.train.persistence.IWagonsRepositoryNode;
 import de.fraunhofer.fit.train.persistence.IWireHolderRepository;
 import de.fraunhofer.fit.train.properties.ServiceLocatorEnvProperties;
 import de.fraunhofer.fit.train.servicelocator.TrainServiceLocator;
+import de.fraunhofer.fit.train.util.PropertiesUtil;
 import de.fraunhofer.fit.train.util.TrainUtil;
 
 @EnableAspectJAutoProxy
@@ -131,6 +133,10 @@ public class ServiceFacade {
 
 	@Autowired
 	private IWireHolderRepository wireHolderRepository;
+	
+
+	@Autowired
+	private MongoOperations mongoOperations;
 	
 
 	public String getInternalId() {
@@ -254,13 +260,10 @@ public class ServiceFacade {
 	public void sendLandPageToDav(String internalId) throws IOException {
 
 		Train train = findTrainByInternalId(internalId);
-//		String name = env.getProperty("env.dav.name");
-//		String type = env.getProperty("env.dav.type");
-//		String token = env.getProperty("env.dav.token");
 		
-		String name = serviceLocatorEnvProperties.getEnvDavName();
-		String type = serviceLocatorEnvProperties.getEnvDavType();
-		String token = serviceLocatorEnvProperties.getEnvDavToken();
+		String name = serviceLocatorEnvProperties.getEnvDavPageName();
+		String type = serviceLocatorEnvProperties.getEnvDavPageType();
+		String token = serviceLocatorEnvProperties.getEnvDavPageToken();
 
 		JSONObject env;
 		env = trainServiceLocator.locateEnvironment(name, type, token);
@@ -297,16 +300,16 @@ public class ServiceFacade {
 	}
 
 	@SuppressWarnings({ "finally", "deprecation" })
-	public Artifacts sendToDav(Artifacts artifacts, String internalId) throws IOException {
+	public Artifacts sendToDav(Artifacts artifacts, String internalId,String wagonId) throws IOException {
 
 		Train train = findTrainByInternalId(internalId);
 //		String name = env.getProperty("env.dav.name");
 //		String type = env.getProperty("env.dav.type");
 //		String token = env.getProperty("env.dav.token");
 		
-		String name = serviceLocatorEnvProperties.getEnvDavName();
-		String type = serviceLocatorEnvProperties.getEnvDavType();
-		String token = serviceLocatorEnvProperties.getEnvDavToken();
+		String name = serviceLocatorEnvProperties.getEnvDavMetadataName();
+		String type = serviceLocatorEnvProperties.getEnvDavMetadataType();
+		String token = serviceLocatorEnvProperties.getEnvDavMetadataToken();
 
 		JSONObject env;
 		env = trainServiceLocator.locateEnvironment(name, type, token);
@@ -326,12 +329,20 @@ public class ServiceFacade {
 			String url = webdavdir + "/" + train.getInternalId() + "/";
 
 			if (train.getInternalId().equals(artifacts.getInternalId())) {
-				System.out.println("sardine url: " + url);
+				System.out.println("sardine url 1: " + url);
 				Boolean existURL = sardine.exists(url);
 				if (!existURL) {
 					sardine.createDirectory(url);
 				}
 			}
+			
+			url = url+wagonId;
+			Boolean existURL = sardine.exists(url);
+			if (!existURL) {
+				sardine.createDirectory(url);
+			}
+
+			System.out.println("sardine url 2: " + url);
 			String filedata = artifacts.getFiledata();
 			String filename = artifacts.getFilename();
 			if ((filename == null || "".equals(filename)) && artifacts.getName() != null
@@ -941,25 +952,95 @@ public class ServiceFacade {
 	 * {0} = ${doi_var}- {1} = ${experimentname_var}- {2} = ${experimentname_var}-
 	 * {3} = ${experimentname_var}- {4} = ${experimentname_var}- {5} =
 	 * ${experimentname_var}- {6} = ${projectdescription_var}
-	 * 
+* ||webdav_doc_host||
+*||webdav_doc_port||
+*||experimentname_var||
+*||experimentdescription_var||
+*||experimentversion_var||
+*||experimentpublicationyear_var||
+*||experimentpublisher_var||
+*||experimentmetadata_var||
+*||experimentresources_var||
+*||experimentplatformendpoint_var||
+*||experimentsourcerepo_var||
+*||experimentlanguage_var||
+*||experimentformat_var||
+*||experimentrights_var||
+*||experimentrightsuri_var||
+*||authorname_var||
+*||authoraffiliation_var||
+*||authornameidentifier_var||
+*||authornameidentifier_var||
+*||doiprefix_var||
+*||doisuffix_var||
+*||doiresourcetype_var||
+*||experimentidentifier_var||
+*||doimetadataendpoint_var||
+*||experimentrestapi_var||
+*||experimentjavadoc_var||
+
 	 * @param train
 	 * @param trainId
 	 * @return
 	 * @throws IOException
 	 */
 	public String customlandpage(Train train) throws IOException {
-		String page = getTemplate();
-		return page.replace("||experimentname_var||", train.getName())
+		
+//		String davpagename = serviceLocatorEnvProperties.getEnvDavPageName();
+//		String davpagetype = serviceLocatorEnvProperties.getEnvDavPageType();
+//		String davpagetoken = serviceLocatorEnvProperties.getEnvDavPageToken();
+//
+//		JSONObject davpageenv;
+//		davpageenv = trainServiceLocator.locateEnvironment(davpagename, davpagetype, davpagetoken);
+//
+//		String pagehost = davpageenv.getString("host");
+//		String pageport = davpageenv.getString("port");
+		
+		//==
+		String davmedocname = serviceLocatorEnvProperties.getEnvDavDocumentationName();
+		String davdoctype = serviceLocatorEnvProperties.getEnvDavDocumentationType();
+		String davdoctoken = serviceLocatorEnvProperties.getEnvDavDocumentationToken();
+
+		JSONObject davdocenv;
+		davdocenv = trainServiceLocator.locateEnvironment(davmedocname, davdoctype, davdoctoken);
+
+		String dochost = davdocenv.getString("host");
+		String docport = davdocenv.getString("port");
+		
+		
+		
+		String page = PropertiesUtil.getResourceFile("content/landingpage.template");
+		
+		return page
+				
+				.replace("||webdav_doc_host||",dochost)
+				.replace("||webdav_doc_port||",docport)
+				.replace("||experimentname_var||", train.getName())
 				.replace("||experimentdescription_var||", train.getDescription())
-				.replace("||experimentidentifier_var||",
-						"https://doi.org/" + train.getDatacite().getIdentifier().getPrefix() + "/"
-								+ train.getDatacite().getIdentifier().getSuffix())
-				.replace("||experimentdataciteendpoint_var||", train.getDatacite().getIdentifier().getProviderURL())
-				.replace("||experimentversion_var||", train.getInternalVersion())
+				.replace("||experimentversion_var||", train.getDatacite().getVersion())
+				.replace("||experimentpublicationyear_var||", train.getDatacite().getPublicationYear())
+				.replace("||experimentpublisher_var||", train.getDatacite().getPublisher())
 				.replace("||experimentmetadata_var||", train.getDatacite().getIdentifier().getMetadataUrl())
 				.replace("||experimentresources_var||", train.getDatacite().getIdentifier().getResourcesUrl())
 				.replace("||experimentplatformendpoint_var||", train.getFlow().getFlowURL())
-				.replace("||experimentrestapi_var||", train.getRestApiDocUrl());
+				.replace("||experimentsourcerepo_var||", train.getSourceRepository())
+				.replace("||experimentlanguage_var||", train.getDatacite().getLanguage())
+				.replace("||experimentformat_var||", train.getDatacite().getFormats().getFormat()[0].getContent())
+				.replace("||experimentrights_var||", train.getDatacite().getRightsList().getRights()[0].getContent())
+				.replace("||experimentrightsuri_var||", train.getDatacite().getRightsList().getRights()[0].getRightsURI())
+				.replace("||authorname_var||", train.getDatacite().getCreators().getCreator()[0].getCreatorName().getContent())
+				.replace("||authoraffiliation_var||", train.getDatacite().getCreators().getCreator()[0].getAffiliation())
+				.replace("||authornameidentifier_var||", train.getDatacite().getCreators().getCreator()[0].getNameIdentifier().getContent())
+				.replace("||doiprefix_var||", train.getDatacite().getIdentifier().getPrefix())
+				.replace("||doisuffix_var||", train.getDatacite().getIdentifier().getSuffix())
+				.replace("||doiresourcetype_var||", train.getDatacite().getResourceType().getContent())
+				.replace("||doiidentifier_var||","https://doi.org/" + train.getDatacite().getIdentifier().getPrefix()+"/"+ train.getDatacite().getIdentifier().getSuffix())
+				.replace("||doimetadataendpoint_var||", train.getDatacite().getIdentifier().getProviderURL())
+				.replace("||experimentrestapi_var||", train.getRestApiDocUrl())
+				.replace("||experimentjavadoc_var||","http://"+dochost+":"+docport+"/metadatadoc/PHTrain_javadoc_v1/");
+
+				//==
+				
 	}
 
 	// == Nodered Metadata ==
@@ -1404,53 +1485,84 @@ public class ServiceFacade {
 
 	}
 
-	// -- resources into wagons
 
 	// -- artifacts into resources
-
+	
 	public Train wrapperTheResourcesObjects(String internalId) {
 		Train train = findFirstTrainByInternalId(internalId);
 		TrainMetadataNoderedNODE trainNode = findTrainNodeByCorrelationAndInternalId(train.getCorrelationObjectId(),
 				train.getInternalId());
 
 		List<WagonsMetadataNoderedNODE> wagonNodeList = findWagonListNodeByTrainNode(trainNode);
-		List<Resources> resourcesList = new ArrayList<Resources>();
+		List<Wagons> wagonsList = new ArrayList<Wagons>();
 		for (WagonsMetadataNoderedNODE wagonNode : wagonNodeList) {
-			List<Wagons> wagonsList = new ArrayList<Wagons>();
 
 			Wagons wagon = findWagonsByCorrelationObjAndInternalId(wagonNode.getCorrelationObjectId(),
 					wagonNode.getInternalId());
 
 			List<ResourcesMetadataNoderedNODE> resourceNodeList = findResourceNodeListNodeByWagonNode(wagonNode);
-
+			List<Resources> resourcesList = new ArrayList<Resources>();
+			Resources resources = null;
 			for (ResourcesMetadataNoderedNODE rsourceNode : resourceNodeList) {
 				List<Artifacts> artifactsList = new ArrayList<Artifacts>();
-				Resources resources = findResourcesByCorrelationObjAndInternalId(rsourceNode.getCorrelationObjectId(),
+				resources = findResourcesByCorrelationObjAndInternalId(rsourceNode.getCorrelationObjectId(),
 						rsourceNode.getInternalId());
 
 				List<ArtifactsMetadataNoderedNODE> artifactsNodeList = findArtifactsNodeListByResourcesNode(
 						rsourceNode);
 
+				if(artifactsNodeList==null || artifactsNodeList.isEmpty()) {
+					return train;
+				}
+				
+//				System.out.println("=======================================");
+//				System.out.println("inside resourceNodeList.wagon.getName(): "+wagon.getName());
+//				System.out.println("inside resourceNodeList.resources.getName(): "+resources.getName());
+				
 				for (ArtifactsMetadataNoderedNODE artifactNode : artifactsNodeList) {
-					artifactsList.addAll(findArtifactsListByArtifactsNode(artifactNode));
+					List<Artifacts> artifactsdebugList = findArtifactsListByArtifactsNode(artifactNode);
+//					for(Artifacts artifact: artifactsdebugList) {
+//						System.out.println("inside resourceNodeList.artifactsdebugList.artifact.getName(): "+artifact.getName());
+//					}
+					artifactsList.addAll(artifactsdebugList);
+				}
+				Artifacts[] artifactsArr = artifactsList.toArray(new Artifacts[artifactsList.size()]);
+//				for(Artifacts art:artifactsArr) {
+//					System.out.println("---------------------------");
+//					System.out.println("inside resourceNodeList.artifactsArr.art.getName(): "+art.getName());
+//					System.out.println("---------------------------");
+//				}
+//				System.out.println("=======================================");
+				
+				if(wagon.getResources()!=null) {
+					for(Resources resourcesTestInternalPointer: wagon.getResources()) {
+						if(resourcesTestInternalPointer.getInternalPointer().equals(resources.getInternalPointer())) {
+							return train;
+						}
+						
+					}
 				}
 
-				Artifacts[] artifactsArr = artifactsList.toArray(new Artifacts[artifactsList.size()]);
 				resources.setArtifacts(artifactsArr);
 				resourcesList.add(resources);
+				
+
 			}
 
 			Resources[] resourceArr = resourcesList.toArray(new Resources[resourcesList.size()]);
 			wagon.setResources(resourceArr);
 			wagonsList.add(wagon);
-
+			
 			Wagons[] wagonsArr = wagonsList.toArray(new Wagons[wagonsList.size()]);
 			train.setWagons(wagonsArr);
 			train = saveTrainAsObj(train);
+
 		}
 
 		return train;
 	}
+
+
 
 	private Resources findResourcesByCorrelationObjAndInternalId(String correlationObjectId, String internalId) {
 		Query query = new Query();
@@ -1693,6 +1805,46 @@ public class ServiceFacade {
 				return wagonNode;
 			}
 		}
+		return null;
+	}
+
+	public List<Train> findOneByRegexQuery(String someProperty) {
+		Field[] fields = Train.class.getDeclaredFields();
+		List<Train>  trains = new ArrayList<Train>();
+		for(Field field:fields) {
+			trains = trainRepository.findOneByRegexQuery(field.getName(),someProperty);
+		}
+		if(!trains.isEmpty()) {
+			return trains;
+		}
+		return Collections.EMPTY_LIST;
+	}
+
+	public Artifacts[] findArtifactsByInternalIdAndWagonInternalId(String internalId, String internalwagonId) {
+		// TODO Auto-generated method stub
+		Train train = findTrainByInternalId(internalId);
+		Wagons[] wagonsArr = train.getWagons();
+		if(wagonsArr==null) {
+			return null;
+		}
+		for(Wagons wagon: wagonsArr) {
+			if(!wagon.getInternalWagonId().equals(internalwagonId)) {
+				continue;
+			}
+			
+			Resources[] resourcesArr = wagon.getResources();
+			if(resourcesArr==null) {
+				continue;
+			}
+			for(Resources resources:resourcesArr) {
+				Artifacts[] artifactsArr = resources.getArtifacts();
+				if(artifactsArr==null) {
+					continue;
+				}
+				return artifactsArr;
+			}
+		}
+
 		return null;
 	}
 

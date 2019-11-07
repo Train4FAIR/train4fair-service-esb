@@ -64,6 +64,7 @@ public class DataCiteTest {
 ////	CurlExecutor.execute(username, password, TEMPLATE_LOCATION);
 //	}
 	
+	@Ignore
 	@Test
 	public void getDOI() throws Exception {
 			String content = "{\n" + 

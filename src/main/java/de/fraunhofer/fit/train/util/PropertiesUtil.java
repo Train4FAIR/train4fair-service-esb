@@ -1,7 +1,9 @@
 package de.fraunhofer.fit.train.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 public class PropertiesUtil {
@@ -36,6 +38,25 @@ public class PropertiesUtil {
 		
 	}
 
+	public static String getResourceFile(String filename) {
+		
+        try (InputStream input = PropertiesUtil.class.getClassLoader().getResourceAsStream(filename)) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            BufferedReader br = new BufferedReader(new InputStreamReader(input));
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            br.close();
+            System.out.println(sb);
+            return sb.toString();
+
+        } catch (IOException ex) {
+        	throw new RuntimeException("Fail to find pht properties file!!!",ex);
+        }
+        
+		
+	}
 
 	
 }

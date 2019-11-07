@@ -30,8 +30,20 @@ public class Wagons  extends TrainAbstract implements Serializable {
 	@Expose
 	private StationProfiles stationProfiles;
 
-
+	@SerializedName("internalWagonId")
+	@Expose
+	private String internalWagonId;
 	
+	
+	
+	public String getInternalWagonId() {
+		return internalWagonId;
+	}
+
+	public void setInternalWagonId(String internalWagonId) {
+		this.internalWagonId = internalWagonId;
+	}
+
 	/**
 	 * Result object
 	 */

@@ -74,9 +74,107 @@ public class ServiceLocatorEnvProperties {
 	private String esbDBPort;
 
 
+	@Value("${env_dav_metadata_name}")
+	private String envDavMetadataName;
+	
+	@Value("${env_dav_metadata_type}")
+	private String envDavMetadataType;
+	
+	@Value("${env_dav_metadata_token}")
+	private String envDavMetadataToken;
+	
+	@Value("${env_dav_doc_name}")
+	private String envDavDocumentationName;
+	
+	@Value("${env_dav_doc_type}")
+	private String envDavDocumentationType;
+	
+	@Value("${env_dav_doc_token}")
+	private String envDavDocumentationToken;
+	
+	@Value("${env_dav_page_name}")
+	private String envDavPageName;
+	
+	@Value("${env_dav_page_type}")
+	private String envDavPageType;
+	
+	@Value("${env_dav_page_token}")
+	private String envDavPageToken;
 	
 	
 	
+	public String getEnvDavMetadataName() {
+		return envDavMetadataName;
+	}
+
+	public void setEnvDavMetadataName(String envDavMetadataName) {
+		this.envDavMetadataName = envDavMetadataName;
+	}
+
+	public String getEnvDavMetadataType() {
+		return envDavMetadataType;
+	}
+
+	public void setEnvDavMetadataType(String envDavMetadataType) {
+		this.envDavMetadataType = envDavMetadataType;
+	}
+
+	public String getEnvDavMetadataToken() {
+		return envDavMetadataToken;
+	}
+
+	public void setEnvDavMetadataToken(String envDavMetadataToken) {
+		this.envDavMetadataToken = envDavMetadataToken;
+	}
+
+	public String getEnvDavDocumentationName() {
+		return envDavDocumentationName;
+	}
+
+	public void setEnvDavDocumentationName(String envDavDocumentationName) {
+		this.envDavDocumentationName = envDavDocumentationName;
+	}
+
+	public String getEnvDavDocumentationType() {
+		return envDavDocumentationType;
+	}
+
+	public void setEnvDavDocumentationType(String envDavDocumentationType) {
+		this.envDavDocumentationType = envDavDocumentationType;
+	}
+
+	public String getEnvDavDocumentationToken() {
+		return envDavDocumentationToken;
+	}
+
+	public void setEnvDavDocumentationToken(String envDavDocumentationToken) {
+		this.envDavDocumentationToken = envDavDocumentationToken;
+	}
+
+	public String getEnvDavPageName() {
+		return envDavPageName;
+	}
+
+	public void setEnvDavPageName(String envDavPageName) {
+		this.envDavPageName = envDavPageName;
+	}
+
+	public String getEnvDavPageType() {
+		return envDavPageType;
+	}
+
+	public void setEnvDavPageType(String envDavPageType) {
+		this.envDavPageType = envDavPageType;
+	}
+
+	public String getEnvDavPageToken() {
+		return envDavPageToken;
+	}
+
+	public void setEnvDavPageToken(String envDavPageToken) {
+		this.envDavPageToken = envDavPageToken;
+	}
+
 	public String getEsbDBHost() {
 		return esbDBHost;
 	}

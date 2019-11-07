@@ -77,15 +77,15 @@ public class Train extends TrainAbstract implements  Serializable {
 	@Expose
 	private String userToken;
 	
+	@SerializedName("internalTrainId")
+	@Expose
+	private String internalTrainId;
+	
 	
 	@SerializedName("datacite")
 	@Expose
 	private Datacite datacite;
 	
-
-	/**
-	 * UC03 - Init
-	 */
 
 	@SerializedName("isAccessConstraintsOk")
 	@Expose
@@ -110,6 +110,16 @@ public class Train extends TrainAbstract implements  Serializable {
 	
 	
 	
+	public String getInternalTrainId() {
+		return internalTrainId;
+	}
+
+
+	public void setInternalTrainId(String internalTrainId) {
+		this.internalTrainId = internalTrainId;
+	}
+
+
 	public String getRestApiDocUrl() {
 		return restApiDocUrl;
 	}

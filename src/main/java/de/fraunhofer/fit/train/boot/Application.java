@@ -1,18 +1,12 @@
 package de.fraunhofer.fit.train.boot;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
-import org.springframework.boot.web.embedded.undertow.UndertowBuilderCustomizer;
-import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-
-import de.fraunhofer.fit.train.properties.ServiceLocatorEnvProperties;
 
 @ComponentScan({ "de.fraunhofer.fit.train" })
 @EntityScan("de.fraunhofer.fit.train")
