@@ -48,21 +48,28 @@ public class TrainServiceLocator {
 		urlsb.append(token);
 		System.out.println("===> url_srv_loc: "+urlsb.toString());
 		StringBuilder sb = new StringBuilder();
+		System.out.println("===> StringBuilder sb = new StringBuilder();");
 		HttpClient client = new DefaultHttpClient();
+		System.out.println("===> HttpClient client = new DefaultHttpClient();");
 		HttpGet request = new HttpGet(urlsb.toString());
+		System.out.println("===> HttpGet request = new HttpGet(urlsb.toString());");
 		HttpResponse response = client.execute(request);
+		System.out.println("===> HttpResponse response = client.execute(request);");
 
 		// Get the response
 		BufferedReader rd = new BufferedReader
 		    (new InputStreamReader(
 		    response.getEntity().getContent()));
+		System.out.println("===> response.getEntity().getContent()));");
 
 		String line = "";
 		while ((line = rd.readLine()) != null) {
+			System.out.println("===> line = rd.readLine()): "+line);
 			sb.append(line);
 		}
-		
+		System.out.println("===> sb.toString(): "+sb.toString());
 		JSONObject envJsonObject = new JSONObject(sb.toString());
+		System.out.println("===> JSONObject envJsonObject = new JSONObject(sb.toString()): "+envJsonObject);
 		return envJsonObject;
 		
 	}
