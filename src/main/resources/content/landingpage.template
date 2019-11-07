@@ -85,7 +85,7 @@
 			<p>
 				DOI Metadata Endpoint: <a href="||doimetadataendpoint_var||">||doimetadataendpoint_var||</a>
 			</p>
-			<p>Datacite fraunhofer FIT Repository: <a href="https://doi.test.datacite.org/repositories/dev.fit"/>https://doi.test.datacite.org/repositories/dev.fit</a>  (User: DEV.FIT / Password: gofair)</p>
+			<p>Datacite fraunhofer FIT Repository: <a href="https://doi.test.datacite.org/repositories/dev.fit"/>https://doi.test.datacite.org/repositories/dev.fit</a></p>
 		</article>
 
 		<article>
