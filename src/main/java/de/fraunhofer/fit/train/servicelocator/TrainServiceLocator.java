@@ -4,10 +4,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -29,7 +37,53 @@ public class TrainServiceLocator {
 	
 	@Autowired ServiceLocatorEnvProperties serviceLocatorEnvProperties;
 	
-	public JSONObject locateEnvironment(String env,String type, String token) throws IOException {
+	public JSONObject locateEnvironment(String env,String type, String token) throws ParseException, IOException, JSONException {
+		StringBuilder urlsb = new StringBuilder();
+		
+		System.out.println("===> "+serviceLocatorEnvProperties.getHost());
+		urlsb.append(serviceLocatorEnvProperties.getProtocol());
+		urlsb.append(serviceLocatorEnvProperties.getHost());
+		urlsb.append(":");
+		urlsb.append(serviceLocatorEnvProperties.getPort());
+		urlsb.append(serviceLocatorEnvProperties.getAppContext());
+		urlsb.append(serviceLocatorEnvProperties.getServiceContext());
+		urlsb.append("/");
+		urlsb.append(env);
+		urlsb.append("/");
+		urlsb.append(type);
+		urlsb.append("/");
+		urlsb.append(token);
+		String url = urlsb.toString();
+		System.out.println("===> url_srv_loc: "+url);
+		
+        HttpGet request = new HttpGet(url);
+
+        // add request headers
+        request.addHeader(HttpHeaders.USER_AGENT, "jbjares");
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpClient.execute(request)) {
+
+            // Get HttpResponse Status
+            System.out.println(response.getProtocolVersion());              // HTTP/1.1
+            System.out.println(response.getStatusLine().getStatusCode());   // 200
+            System.out.println(response.getStatusLine().getReasonPhrase()); // OK
+            System.out.println(response.getStatusLine().toString());        // HTTP/1.1 200 OK
+
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                // return it as a String
+                String result = EntityUtils.toString(entity);
+				JSONObject envJsonObject = new JSONObject(result);
+				return envJsonObject;
+            }
+
+        }
+        throw new RuntimeException("Fail to obtain content of url: "+url);
+	}
+	
+	@Deprecated
+	public JSONObject locateEnvironment_deprecated(String env,String type, String token) throws IOException {
 		
 		StringBuilder urlsb = new StringBuilder();
 		
