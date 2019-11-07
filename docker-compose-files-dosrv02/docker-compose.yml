@@ -1,0 +1,149 @@
+version: '3'
+
+services:
+
+# DB  ***************************************************************************************
+  mongo_train:
+    container_name: ${CONTAINER_NAME}
+    image: jbjares/mongo_java8_maven:${DB_TAG}
+    environment:
+      - MONGO_DATA_DIR=/app/data/db
+      - MONGO_LOG_DIR=/app/data/db.log
+    volumes:
+      - ./data/db:/data/db
+    networks:
+      - train_container_network
+    ports:
+        - $MONGO_PORT:27017
+    command: mongod --bind_ip_all --port $MONGO_PORT --ipv6 
+    
+    #docker run -d -p 27018:27018 jbjares/mongo_java8_maven:v1 mongod --bind_ip_all --ipv6 --port 28018
+   
+# METADATA_DAV  ***************************************************************************************
+  metadata_dav:
+    image: bytemark/webdav
+    restart: always
+    ports:
+      - "9999:80"
+    environment:
+      AUTH_TYPE: Digest
+      USERNAME: admin
+      PASSWORD: admin
+    volumes:
+      - /webdav/metadata:/var/lib/dav
+    links:
+    - mongo_train
+    depends_on:
+    - mongo_train
+        
+# LANDINGPAGE_DAV  ***************************************************************************************
+  landingpage_dav:
+    image: bytemark/webdav
+    restart: always
+    ports:
+      - "9998:80"
+    environment:
+      AUTH_TYPE: Digest
+      USERNAME: admin
+      PASSWORD: admin
+    volumes:
+      - /webdav/landingpage:/var/lib/dav
+    links:
+    - mongo_train
+    - metadata_dav
+    depends_on:
+    - mongo_train
+    - metadata_dav
+
+     
+# APP_SD  ***************************************************************************************
+  sd: 
+    image: jbjares/train-platform-service-locator:${SD_TAG}
+    environment:
+    - user_name=$USERNAME
+    - sd_server_port=$SD_SERVER_PORT
+    - sd_server_address=$SD_SERVER_ADDRESS
+    - mongo_host=$MONGO_HOST
+    - mongo_port=$MONGO_PORT
+    - mongo_db_name=$SD_MONGO_DB
+    - app_env=$APP_ENV
+    - load_db=$LOAD_DB
+    ports:
+    - $SD_SERVER_PORT:8881
+    links:
+    - mongo_train
+    - metadata_dav
+    - landingpage_dav
+    depends_on:
+    - mongo_train
+    - metadata_dav
+    - landingpage_dav
+    volumes:
+     - "/app/service-locator-docker/:/app/service-locator-docker/"
+     - "/app/common/docker-files/:/app/common/docker-files/"
+    networks:
+     - train_container_network
+
+    command: ["/app/common/docker-files/wait-for-it.sh", "$MONGO_HOST:$MONGO_PORT","--timeout=30","--","/app/common/docker-files/sd_entrypoint.sh"]
+# APP_ESB  ***************************************************************************************
+  esb: 
+    image: jbjares/train-microservices-esb:${ESB_TAG}
+    environment:
+    - username=$USERNAME
+    - esb_server_port=$ESB_SERVER_PORT
+    - esb_server_address=$ESB_SERVER_ADDRESS
+    - mongo_host=$MONGO_HOST
+    - mongo_port=$MONGO_PORT
+    - mongo_db_name=$ESB_MONGO_DB
+    - app_env=$APP_ENV
+    - env_db_name=$APP_ENV
+    - env_db_type=$ENV_DB_TYPE
+    - env_db_token=$ENV_DB_TOKEN
+    - env_ms_name=$APP_ENV
+    - env_ms_type=$ENV_MS_TYPE
+    - env_ms_token=$ENV_DAV_TOKEN
+    - env_dav_name=$APP_ENV
+    - env_dav_type=$ENV_DAV_TYPE
+    - env_dav_token=$ENV_DAV_TOKEN
+    - env_dav_metadata_name=$APP_ENV
+    - env_dav_metadata_type=$ENV_DAV_METADATA_TYPE
+    - env_dav_metadata_token=$ENV_DAV_METADATA_TOKEN
+    - env_dav_doc_name=$APP_ENV
+    - env_dav_doc_type=$ENV_DAV_DOC_TYPE
+    - env_dav_doc_token=$ENV_DAV_DOC_TOKEN
+    - env_dav_page_name=$APP_ENV
+    - env_dav_page_type=$ENV_DAV_PAGE_TYPE
+    - env_dav_page_token=$ENV_DAV_PAGE_TOKEN
+    - srv_loc_protocol=$SRV_LOC_PROTOCOL
+    - srv_loc_host=$SRV_LOC_HOST
+    - srv_loc_port=$SRV_LOC_PORT
+    - srv_loc_app_ctx=$SRV_LOC_APP_CTX
+    - srv_loc_rest_ctx=$SRV_LOC_REST_CTX
+    - load_db=$LOAD_DB
+    - esb_tag=$ESB_TAG
+    ports:
+    - $ESB_SERVER_PORT:9091
+    links:
+    - mongo_train
+    - metadata_dav
+    - landingpage_dav
+    - sd
+    depends_on:
+    - mongo_train
+    - metadata_dav
+    - landingpage_dav
+    - sd
+    volumes:
+     - "/app/train-esb-docker/:/app/train-esb-docker/"
+     - "/app/common/docker-files/:/app/common/docker-files/"
+    networks:
+     - train_container_network
+    command: ["/app/common/docker-files/wait-for-it.sh", "$MONGO_HOST:$MONGO_PORT","--timeout=60","--","/app/common/docker-files/esb_entrypoint.sh"]
+    
+networks:
+    train_container_network:
+        # use the bridge driver, but enable IPv6
+        driver: bridge
+        driver_opts:
+            com.docker.network.enable_ipv6: "true"
+  

@@ -282,6 +282,10 @@ public class ServiceFacade {
 			String webdavdir = "http://" + host + ":" + port;
 			String url = webdavdir + "/" + train.getInternalId() + "/";
 
+			System.out.println("============================================");
+			System.out.println("webdav page user and pass: "+username+":"+password);
+			System.out.println("webdav page url: "+url);
+			System.out.println("============================================");
 			System.out.println("sardine landpageurl: " + url);
 			Boolean existURL = sardine.exists(url);
 			if (!existURL) {
@@ -327,7 +331,11 @@ public class ServiceFacade {
 
 			String webdavdir = "http://" + host + ":" + port;
 			String url = webdavdir + "/" + train.getInternalId() + "/";
-
+			
+			System.out.println("============================================");
+			System.out.println("webdav metadata user and pass: "+username+":"+password);
+			System.out.println("webdav metadata url: "+url);
+			System.out.println("============================================");
 			if (train.getInternalId().equals(artifacts.getInternalId())) {
 				System.out.println("sardine url 1: " + url);
 				Boolean existURL = sardine.exists(url);

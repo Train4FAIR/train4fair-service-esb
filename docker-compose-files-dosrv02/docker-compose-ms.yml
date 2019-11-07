@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+
+# APP_ESB  ***************************************************************************************
+  esb: 
+    image: jbjares/train-microservices-esb:${ESB_TAG}
+    environment:
+    - username=$USERNAME
+    - esb_server_port=$ESB_SERVER_PORT
+    - esb_server_address=$ESB_SERVER_ADDRESS
+    - mongo_host=$MONGO_HOST
+    - mongo_port=$MONGO_PORT
+    - mongo_db_name=$ESB_MONGO_DB
+    - app_env=$APP_ENV
+    - env_db_name=$APP_ENV
+    - env_db_type=$ENV_DB_TYPE
+    - env_db_token=$ENV_DB_TOKEN
+    - env_ms_name=$APP_ENV
+    - env_ms_type=$ENV_MS_TYPE
+    - env_ms_token=$ENV_DAV_TOKEN
+    - env_dav_name=$APP_ENV
+    - env_dav_type=$ENV_DAV_TYPE
+    - env_dav_token=$ENV_DAV_TOKEN
+    - env_dav_metadata_name=$APP_ENV
+    - env_dav_metadata_type=$ENV_DAV_METADATA_TYPE
+    - env_dav_metadata_token=$ENV_DAV_METADATA_TOKEN
+    - env_dav_doc_name=$APP_ENV
+    - env_dav_doc_type=$ENV_DAV_DOC_TYPE
+    - env_dav_doc_token=$ENV_DAV_DOC_TOKEN
+    - env_dav_page_name=$APP_ENV
+    - env_dav_page_type=$ENV_DAV_PAGE_TYPE
+    - env_dav_page_token=$ENV_DAV_PAGE_TOKEN
+    - srv_loc_protocol=$SRV_LOC_PROTOCOL
+    - srv_loc_host=$SRV_LOC_HOST
+    - srv_loc_port=$SRV_LOC_PORT
+    - srv_loc_app_ctx=$SRV_LOC_APP_CTX
+    - srv_loc_rest_ctx=$SRV_LOC_REST_CTX
+    - load_db=$LOAD_DB
+    - esb_tag=$ESB_TAG
+    ports:
+    - $ESB_SERVER_PORT:9091
+    volumes:
+     - "/app/train-esb-docker/:/app/train-esb-docker/"
+     - "/app/common/docker-files/:/app/common/docker-files/"
+    networks:
+     - train_container_network
+    command: ["/app/common/docker-files/wait-for-it.sh", "$MONGO_HOST:$MONGO_PORT","--timeout=60","--","/app/common/docker-files/esb_entrypoint.sh"]
+    
+networks:
+    train_container_network:
+        # use the bridge driver, but enable IPv6
+        driver: bridge
+        driver_opts:
+            com.docker.network.enable_ipv6: "true"
+  
