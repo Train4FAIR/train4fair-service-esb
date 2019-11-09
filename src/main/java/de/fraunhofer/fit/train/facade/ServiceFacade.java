@@ -29,6 +29,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicHttpResponse;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -249,6 +250,9 @@ public class ServiceFacade {
 	}
 
 	public Train saveUpdateTrain(Train train) throws IOException, NoSuchAlgorithmException {
+		String trainId = train.getInternalId();
+		train.setCorrelationObjectId(trainId);
+		train.set_id(new ObjectId(trainId));
 		return trainRepository.save(train);
 	}
 
@@ -785,12 +789,18 @@ public class ServiceFacade {
 	}
 
 	public Train saveTrainBasic(Train train) {
+		String trainId = train.getInternalId();
+		train.setCorrelationObjectId(trainId);
+		train.set_id(new ObjectId(trainId));
 		return trainRepository.save(train);
 	}
 
 	public Train saveTrain(String trainStr) {
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 		Train train = gson.fromJson(trainStr, Train.class);
+		String trainId = train.getInternalId();
+		train.setCorrelationObjectId(trainId);
+		train.set_id(new ObjectId(trainId));
 		return trainRepository.save(train);
 	}
 
@@ -1107,6 +1117,9 @@ public class ServiceFacade {
 					"Error while saving the Train. The internalId or internalPointer attributes should be empty or null");
 		}
 		try {
+			String trainId = train.getInternalId();
+			train.setCorrelationObjectId(trainId);
+			train.set_id(new ObjectId(trainId));
 			return trainRepository.save(train);
 		} catch (Exception e) {
 			throw new RuntimeException("Fail to save the Train", e);
@@ -1119,6 +1132,9 @@ public class ServiceFacade {
 					"Error while saving the Train. The internalId or internalPointer attributes should be empty or null");
 		}
 		try {
+			String trainId = train.getInternalId();
+			train.setCorrelationObjectId(trainId);
+			train.set_id(new ObjectId(trainId));
 			return trainRepository.save(train);
 		} catch (Exception e) {
 			throw new RuntimeException("Fail to save the Train", e);
