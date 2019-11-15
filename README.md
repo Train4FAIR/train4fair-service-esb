@@ -46,13 +46,13 @@ or
 
 #### Getting Help
 
-More documentation can be found [https://groups.google.com/forum/#!forum/train4fair](https://groups.google.com/forum/#!forum/train4fair).
+Keep in touch with us by the Train4FAIR Forum [https://groups.google.com/forum/#!forum/train4fair](https://groups.google.com/forum/#!forum/train4fair).
 
 
 #### Contributing
 
 Before raising a pull-request, please read our
-[contributing guide](https://github.com/node-red/node-red/blob/master/CONTRIBUTING.md).
+[contributing guide](https://groups.google.com/forum/#!forum/train4fair](https://groups.google.com/forum/#!forum/train4fair).
 
 This project adheres to the [Contributor Covenant 1.4](http://contributor-covenant.org/version/1/4/).
  By participating, you are expected to uphold this code. Please report unacceptable
@@ -60,17 +60,15 @@ This project adheres to the [Contributor Covenant 1.4](http://contributor-covena
 
 #### Authors
 
-Train4FAIR is a project of the [Node-RED and OpenJS Foundation](https://openjsf.org).
+Train4FAIR is a project of the [Fraunhofer FIT and RWTH](rwth-aachen.de).
 
 
-It was created by [IBM Emerging Technology](https://www.ibm.com/blogs/emerging-technology/).
+It was created by [Fraunhofer FIT and RWTH](https://www.fit.fraunhofer.de/).
 
-* Nick O'Leary [@knolleary](http://twitter.com/knolleary) (Node-RED)
-* Dave Conway-Jones [@ceejay](http://twitter.com/ceejay) (Node-RED)
 * João Bosco Jares [@jbjares](http://twitter.com/jbjares) (Train4FAIR)
 
 
 
 #### Copyright and license
 
-Copyright JS Foundation and other contributors, https://openjsf.org under [the Apache 2.0 license](LICENSE).
+Copyright Fraunhofer FIT and RWTH Project under [the Apache 2.0 license](LICENSE).

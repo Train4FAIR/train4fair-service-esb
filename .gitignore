@@ -1,4 +1,12 @@
 /target/
+private.properties
+*private.properties
+*/private.properties
+**/private.properties
+installation.properties
+*installation.properties
+*/installation.properties
+**/installation.properties
 data/*
 */data/*
 /data/
